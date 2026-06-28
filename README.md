@@ -82,14 +82,21 @@ Projekat koristi [`uv`](https://github.com/astral-sh/uv) za upravljanje zavisnos
 uv sync
 ```
 
+### Brzo pokretanje (istrenirani modeli su uključeni u repozitorijum)
+
+Istrenirani modeli i test skup su već uključeni — moguće je odmah pokrenuti aplikaciju bez treniranja:
+
+```bash
+uv run python -m streamlit run app/app.py
+```
+
+### Pokretanje od nule
+
+Za potpuno treniranje od nule potrebno je preuzeti `creditcard.csv` sa [Kaggle-a](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) i smestiti ga u `data/raw/`, zatim pokrenuti:
+
 ```bash
 # Pokretanje celog pipeline-a (priprema → EDA → treniranje → evaluacija)
 uv run python pipeline.py
-```
-
-```bash
-# Pokretanje web aplikacije (nakon što je pipeline pokrenut bar jednom)
-uv run python -m streamlit run app/app.py
 ```
 
 ---

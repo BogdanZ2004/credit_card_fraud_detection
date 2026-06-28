@@ -5,8 +5,8 @@
 data/raw/creditcard.csv
 
 # Generisani fajlovi — pipeline ih kreira automatski
-data/processed/
-models/
+data/processed/creditcard_processed.csv
+data/processed/val_set.csv
 results/
 
 # Python cache
