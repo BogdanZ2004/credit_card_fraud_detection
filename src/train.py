@@ -11,7 +11,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
-
+# Prostori pretrage hiperparametara za svaki model koji se koriste u RandomizedSearchCV
 SEARCH_SPACES = {
     "LogisticRegression": {
         'params': {
@@ -52,10 +52,16 @@ SEARCH_SPACES = {
     },
 }
 
+# 24 najvažnija atributa određena analizom važnosti iz RandomForest_100 modela
+TOP_24_FEATURES = [
+    'V14', 'V10', 'V4', 'V12', 'V17', 'V3', 'V11', 'V16',
+    'V2', 'V9', 'V7', 'V8', 'V21', 'V18', 'V19', 'Hour',
+    'V5', 'V27', 'V1', 'V6', 'V13', 'V20', 'Scaled_Amount', 'V26'
+]
+
 
 def get_base_models():
-    # n_jobs=1 on all models here — RandomizedSearchCV runs folds in parallel
-    # so having n_jobs=-1 on models too causes nested parallelism conflicts
+    # n_jobs=1 jer RandomizedSearchCV već paralelizuje foldove — dvostruka paralelizacija pravi konflikte
     return {
         "LogisticRegression": LogisticRegression(max_iter=1000, random_state=42),
         "DecisionTree":       DecisionTreeClassifier(random_state=42),
@@ -66,6 +72,7 @@ def get_base_models():
 
 
 def split_data(df, random_state=42):
+    # Podela na 70% trening, 15% validacija, 15% test — stratifikovano po klasi
     X = df.drop('Class', axis=1)
     y = df['Class']
 
@@ -81,6 +88,7 @@ def split_data(df, random_state=42):
 
 
 def scale_features(X_train, X_val, X_test, models_dir):
+    # Scaler se fita SAMO na trening skupu kako bi se izbeglo curenje podataka
     scaler = RobustScaler()
     X_train = X_train.copy()
     X_val   = X_val.copy()
@@ -94,16 +102,24 @@ def scale_features(X_train, X_val, X_test, models_dir):
     X_val   = X_val.drop('Amount', axis=1)
     X_test  = X_test.drop('Amount', axis=1)
 
+    # Čuvamo scaler kako bi ga app.py mogao koristiti pri predikciji
     joblib.dump(scaler, os.path.join(models_dir, 'scaler.pkl'))
     return X_train, X_val, X_test
 
 
+def select_features(X_train, X_val, X_test):
+    # Zadržavamo samo 24 najvažnija atributa i odbacujemo ostatak
+    return X_train[TOP_24_FEATURES], X_val[TOP_24_FEATURES], X_test[TOP_24_FEATURES]
+
+
 def apply_smote(X_train, y_train, random_state=42):
+    # Sintetičko presamplovanje manjinske klase samo na trening skupu
     smote = SMOTE(random_state=random_state)
     return smote.fit_resample(X_train, y_train)
 
 
 def tune_hyperparameters(X_train, y_train, metrics_dir):
+    # SMOTE je unutar pipeline-a svakog folda kako ne bi curio u validacioni deo folda
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     base_models = get_base_models()
     best_params_all = {}
@@ -119,6 +135,7 @@ def tune_hyperparameters(X_train, y_train, metrics_dir):
         print(f"   -> Podešavam {name}...")
         space = SEARCH_SPACES[name]
 
+        # Pipeline kombinuje SMOTE i model kako bi se SMOTE primenjivao unutar svakog folda
         pipeline = ImbPipeline([
             ('smote', SMOTE(random_state=42)),
             ('model', model)
@@ -154,6 +171,7 @@ def tune_hyperparameters(X_train, y_train, metrics_dir):
 def train_models(X_train_smote, y_train_smote, best_params, models_dir):
     os.makedirs(models_dir, exist_ok=True)
 
+    # Finalni modeli se treniraju sa najboljim hiperparametrima i n_jobs=-1 za brzinu
     models = {
         "LogisticRegression": LogisticRegression(
             max_iter=1000, random_state=42,
@@ -194,16 +212,19 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n3. Skaliranje 'Amount' kolone (fit samo na trening skupu)...")
     X_train, X_val, X_test = scale_features(X_train, X_val, X_test, models_dir)
 
-    print("\n4. Podešavanje hiperparametara (RandomizedSearchCV, SMOTE unutar folda)...")
+    print("\n4. Odabir 24 najbitnija atributa...")
+    X_train, X_val, X_test = select_features(X_train, X_val, X_test)
+
+    print("\n5. Podešavanje hiperparametara (RandomizedSearchCV, SMOTE unutar folda)...")
     best_params = tune_hyperparameters(X_train, y_train, metrics_dir)
 
-    print("\n5. Primena SMOTE tehnike SAMO na Trening setu...")
+    print("\n6. Primena SMOTE tehnike SAMO na Trening setu...")
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
 
-    print("\n6. Treniranje finalnih modela sa najboljim parametrima...")
+    print("\n7. Treniranje finalnih modela sa najboljim parametrima...")
     train_models(X_train_smote, y_train_smote, best_params, models_dir)
 
-    print("\n7. Čuvanje Validacionog i Test seta za evaluaciju...")
+    print("\n8. Čuvanje Validacionog i Test seta za evaluaciju...")
     val_df = X_val.copy()
     val_df['Class'] = y_val
     val_df.to_csv(val_data_path, index=False)

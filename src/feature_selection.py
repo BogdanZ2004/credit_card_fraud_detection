@@ -12,10 +12,12 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     df = pd.read_csv(processed_data_path)
     X = df.drop('Class', axis=1)
     y = df['Class']
-    
+
+    # Ista podela kao u train.py kako bi rezultati bili uporedivi
     X_temp, X_test, y_temp, y_test = train_test_split(X, y, test_size=0.15, random_state=42, stratify=y)
     X_train, X_val, y_train, y_val = train_test_split(X_temp, y_temp, test_size=0.1765, random_state=42, stratify=y_temp)
 
+    # Skaliranje Amount kolone — fit samo na trening skupu
     scaler = RobustScaler()
     X_train = X_train.copy()
     X_val = X_val.copy()
@@ -27,16 +29,14 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     X_val = X_val.drop('Amount', axis=1)
     X_test = X_test.drop('Amount', axis=1)
 
-    # Učitavanje originalnog modela da bismo izvukli koje su kolone najbitnije
     try:
         original_rf = joblib.load(original_model_path)
     except FileNotFoundError:
         print(f"Greška: Nije pronađen model na putanji {original_model_path}")
         return
 
+    # Rangiranje svih atributa po važnosti iz već istreniranog RandomForest modela
     importances = original_rf.feature_importances_
-
-    # Rangiranje svih 30 atributa
     feature_df = pd.DataFrame({
         'Atribut': X_train.columns,
         'Značaj': importances
@@ -48,29 +48,24 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     print(f"\n2. Započinjem eksperiment (Isprobavanje od 1 do {sve_kolone} kolona).")
     print("   ⏳ UPOZORENJE: Ovo će potrajati! Trenira se 30 modela zaredom...\n")
 
-    # Petlja koja ide od 1 do 30
+    # Treniramo novi model za svaki mogući broj atributa i ocenjujemo na validacionom skupu
     for k in range(1, sve_kolone + 1):
         top_k_features = feature_df['Atribut'].head(k).tolist()
         print(f"   -> [Model {k}/{sve_kolone}] Treniram sa top {k} atributa...")
-        
-        # Smanjujemo podatke samo na trenutni broj najboljih kolona
+
         X_train_reduced = X_train[top_k_features]
         X_val_reduced   = X_val[top_k_features]
 
-        # Sprovodimo SMOTE na smanjenom skupu
         smote = SMOTE(random_state=42)
         X_train_smote_red, y_train_smote_red = smote.fit_resample(X_train_reduced, y_train)
 
-        # Treniramo model
         rf = RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=-1)
         rf.fit(X_train_smote_red, y_train_smote_red)
 
-        # Ocenjujemo model na validacionom skupu
         y_pred = rf.predict(X_val_reduced)
         recall = recall_score(y_val, y_pred)
         precision = precision_score(y_val, y_pred)
 
-        # Zapisujemo rezultate za trenutni broj kolona
         svi_rezultati.append({
             'Broj_Atributa': k,
             'Odziv_Recall': recall,
@@ -79,24 +74,20 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         })
 
     print("\n3. Završeno treniranje! Rangiranje rezultata...")
-    # Pakovanje u tabelu radi lakšeg sortiranja
     rezultati_df = pd.DataFrame(svi_rezultati)
-    
-    # Sortiramo tako da najbolji Odziv (Recall) bude prvi. 
-    # Ako imaju isti odziv, gledamo ko ima bolju Preciznost.
+
+    # Sortiramo po odzovu pa po preciznosti kao sekundarnom kriterijumu
     rezultati_df = rezultati_df.sort_values(by=['Odziv_Recall', 'Preciznost_Precision'], ascending=[False, False])
-    
-    # Resetujemo indeks za lepši prikaz ranga
     rezultati_df = rezultati_df.reset_index(drop=True)
 
     print("4. Čuvanje u fajl...")
     os.makedirs(metrics_dir, exist_ok=True)
     fajl_putanja = os.path.join(metrics_dir, 'rang_lista_atributa.txt')
-    
+
     with open(fajl_putanja, 'w', encoding='utf-8') as f:
         f.write("=== SVEOTBUHVATNA RANG LISTA BROJA ATRIBUTA ===\n")
         f.write("Sortirano primarno po najboljem Odzivu, a sekundarno po Preciznosti.\n\n")
-        
+
         for index, row in rezultati_df.iterrows():
             f.write(f"🏆 MESTO #{index + 1} | Korišćeno {row['Broj_Atributa']} atributa\n")
             f.write(f"   Odziv (Recall):  {row['Odziv_Recall']:.4f}\n")

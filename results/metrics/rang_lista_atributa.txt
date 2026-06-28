@@ -1,0 +1,153 @@
+=== SVEOTBUHVATNA RANG LISTA BROJA ATRIBUTA ===
+Sortirano primarno po najboljem Odzivu, a sekundarno po Preciznosti.
+
+🏆 MESTO #1 | Korišćeno 24 atributa
+   Odziv (Recall):  0.8784
+   Preciznost:      0.8904
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26
+-----------------------------------------------------------------
+🏆 MESTO #2 | Korišćeno 22 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.8889
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20
+-----------------------------------------------------------------
+🏆 MESTO #3 | Korišćeno 21 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.8767
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13
+-----------------------------------------------------------------
+🏆 MESTO #4 | Korišćeno 20 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.8649
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6
+-----------------------------------------------------------------
+🏆 MESTO #5 | Korišćeno 26 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.8649
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26, V28, V22
+-----------------------------------------------------------------
+🏆 MESTO #6 | Korišćeno 19 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.8533
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1
+-----------------------------------------------------------------
+🏆 MESTO #7 | Korišćeno 17 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.8421
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5
+-----------------------------------------------------------------
+🏆 MESTO #8 | Korišćeno 15 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7901
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19
+-----------------------------------------------------------------
+🏆 MESTO #9 | Korišćeno 14 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7711
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18
+-----------------------------------------------------------------
+🏆 MESTO #10 | Korišćeno 13 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7619
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21
+-----------------------------------------------------------------
+🏆 MESTO #11 | Korišćeno 11 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7529
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7
+-----------------------------------------------------------------
+🏆 MESTO #12 | Korišćeno 8 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7356
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16
+-----------------------------------------------------------------
+🏆 MESTO #13 | Korišćeno 9 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7356
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2
+-----------------------------------------------------------------
+🏆 MESTO #14 | Korišćeno 12 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.7273
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8
+-----------------------------------------------------------------
+🏆 MESTO #15 | Korišćeno 5 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.4812
+   Korišćene kolone: V14, V10, V4, V12, V17
+-----------------------------------------------------------------
+🏆 MESTO #16 | Korišćeno 4 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.3333
+   Korišćene kolone: V14, V10, V4, V12
+-----------------------------------------------------------------
+🏆 MESTO #17 | Korišćeno 3 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.1855
+   Korišćene kolone: V14, V10, V4
+-----------------------------------------------------------------
+🏆 MESTO #18 | Korišćeno 1 atributa
+   Odziv (Recall):  0.8649
+   Preciznost:      0.0146
+   Korišćene kolone: V14
+-----------------------------------------------------------------
+🏆 MESTO #19 | Korišćeno 27 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.8750
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26, V28, V22, V24
+-----------------------------------------------------------------
+🏆 MESTO #20 | Korišćeno 30 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.8750
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26, V28, V22, V24, V15, V25, V23
+-----------------------------------------------------------------
+🏆 MESTO #21 | Korišćeno 23 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.8630
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount
+-----------------------------------------------------------------
+🏆 MESTO #22 | Korišćeno 16 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.8400
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour
+-----------------------------------------------------------------
+🏆 MESTO #23 | Korišćeno 18 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.8289
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27
+-----------------------------------------------------------------
+🏆 MESTO #24 | Korišćeno 10 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.7590
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9
+-----------------------------------------------------------------
+🏆 MESTO #25 | Korišćeno 6 atributa
+   Odziv (Recall):  0.8514
+   Preciznost:      0.5888
+   Korišćene kolone: V14, V10, V4, V12, V17, V3
+-----------------------------------------------------------------
+🏆 MESTO #26 | Korišćeno 25 atributa
+   Odziv (Recall):  0.8378
+   Preciznost:      0.8732
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26, V28
+-----------------------------------------------------------------
+🏆 MESTO #27 | Korišćeno 28 atributa
+   Odziv (Recall):  0.8378
+   Preciznost:      0.8732
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26, V28, V22, V24, V15
+-----------------------------------------------------------------
+🏆 MESTO #28 | Korišćeno 7 atributa
+   Odziv (Recall):  0.8378
+   Preciznost:      0.6889
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11
+-----------------------------------------------------------------
+🏆 MESTO #29 | Korišćeno 2 atributa
+   Odziv (Recall):  0.8378
+   Preciznost:      0.0620
+   Korišćene kolone: V14, V10
+-----------------------------------------------------------------
+🏆 MESTO #30 | Korišćeno 29 atributa
+   Odziv (Recall):  0.8243
+   Preciznost:      0.8714
+   Korišćene kolone: V14, V10, V4, V12, V17, V3, V11, V16, V2, V9, V7, V8, V21, V18, V19, Hour, V5, V27, V1, V6, V13, V20, Scaled_Amount, V26, V28, V22, V24, V15, V25
+-----------------------------------------------------------------

@@ -24,31 +24,33 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     os.makedirs(metrics_dir, exist_ok=True)
 
     metrics_file_path = os.path.join(metrics_dir, 'model_comparison.txt')
-    
+
     with open(metrics_file_path, 'w', encoding='utf-8') as f:
         f.write("=== POREĐENJE MODELA ZA DETEKCIJU PREVARA ===\n\n")
 
     print("\n2. Evaluacija modela...")
+    # Lista za čuvanje ROC podataka svih modela kako bi se nacrtala zajednička kriva
     roc_curves = []
 
     for model_file in sorted(os.listdir(models_dir)):
+        # Preskačemo scaler.pkl jer nije model za klasifikaciju
         if not model_file.endswith('.pkl') or model_file == 'scaler.pkl':
             continue
-            
+
         model_name = model_file.replace('.pkl', '')
         print(f"\n   -> Testiram model: {model_name}")
-        
+
         model_path = os.path.join(models_dir, model_file)
         model = joblib.load(model_path)
-        
+
         y_pred = model.predict(X_test)
         y_proba = model.predict_proba(X_test)[:, 1]
 
-        # Računanje metrika
+        # Računanje svih metrika na test skupu
         precision = precision_score(y_test, y_pred)
         recall = recall_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
-        
+
         pr_precision, pr_recall, _ = precision_recall_curve(y_test, y_proba)
         auprc = auc(pr_recall, pr_precision)
         roc_auc = roc_auc_score(y_test, y_proba)
@@ -64,11 +66,11 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
             f"AUPRC:                  {auprc:.4f}\n\n"
         )
         print(result_text)
-        
+
         with open(metrics_file_path, 'a', encoding='utf-8') as f:
             f.write(result_text)
 
-        # Matrica konfuzije
+        # Matrica konfuzije prikazuje tačne i netačne predikcije po klasi
         cm = confusion_matrix(y_test, y_pred)
         plt.figure(figsize=(6, 4))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=False,
@@ -77,12 +79,13 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         plt.title(f'Matrica konfuzije - {model_name}')
         plt.ylabel('Stvarna klasa')
         plt.xlabel('Predviđena klasa')
-        
+
         cm_fig_path = os.path.join(figures_dir, f'confusion_matrix_{model_name}.png')
         plt.savefig(cm_fig_path, bbox_inches='tight')
         plt.close()
         print(f"      [Matrica konfuzije sačuvana]")
 
+    # Zajednička ROC kriva za sve modele radi lakšeg poređenja
     plt.figure(figsize=(8, 6))
     for model_name, fpr, tpr, roc_auc in roc_curves:
         plt.plot(fpr, tpr, label=f"{model_name} (AUC = {roc_auc:.4f})")
@@ -102,5 +105,5 @@ if __name__ == "__main__":
     MODELS_DIR = "../models"
     FIGURES_DIR = "../results/figures"
     METRICS_DIR = "../results/metrics"
-    
+
     evaluate_models(TEST_FILE, MODELS_DIR, FIGURES_DIR, METRICS_DIR)

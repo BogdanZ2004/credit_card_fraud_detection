@@ -1,6 +1,7 @@
 import os
 import sys
 
+# Dodajemo src/ u path kako bi import modula radio bez obzira odakle se pokreće
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from data_preparation import prepare_data
@@ -8,6 +9,7 @@ from eda_analysis import run_eda
 from train import train_pipeline
 from evaluate import evaluate_models
 
+# Apsolutne putanje ka svim folderima i fajlovima projekta
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
 RAW_DATA    = os.path.join(BASE_DIR, 'data', 'raw', 'creditcard.csv')
 PROCESSED   = os.path.join(BASE_DIR, 'data', 'processed', 'creditcard_processed.csv')
