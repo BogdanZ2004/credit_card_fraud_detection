@@ -44,6 +44,8 @@ Svaka transakcija sadrži:
 ### Odabir atributa (`src/feature_selection.py`)
 - Exhaustivna analiza: isprobava top-1 do top-30 atributa po važnosti iz Random Forest modela.
 - Evaluacija na validacionom skupu radi ispravnog poređenja.
+- Rezultat je rang lista koja pokazuje koliko atributa je dovoljno za maksimalan odziv — koristi se da se proveri da li su svi atributi neophodni ili se neki mogu ukloniti bez gubitka performansi.
+- Nije deo glavnog pipeline-a — pokreće se zasebno: `uv run python src/feature_selection.py`
 
 ---
 
