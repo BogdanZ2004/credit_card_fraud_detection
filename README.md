@@ -112,11 +112,11 @@ uv run python pipeline.py
 | Stablo odlučivanja | 0.0664 | 0.7703 | 0.1223 | 0.8977 | 0.6931 |
 | Random Forest (100) | 0.8429 | 0.7973 | 0.8194 | 0.9710 | 0.8339 |
 | Random Forest (150) | 0.8551 | 0.7973 | 0.8252 | 0.9773 | 0.8361 |
-| **XGBoost** | **0.8378** | **0.8378** | **0.8378** | **0.9704** | **0.8438** |
+| **XGBoost** | **0.8493** | **0.8378** | **0.8435** | **0.9702** | **0.8428** |
 
-**Najbolji model na test skupu: XGBoost** — najviši AUPRC (0.8438) i najviši Odziv (0.8378).
+**Najbolji model: XGBoost** — najviši AUPRC i na validaciji (0.8690) i na test skupu (0.8428), uz najviši Odziv (0.8378).
 
-> **Napomena o izboru modela:** Tabela iznad poredi sve modele na test skupu. Sam izbor modela je metodološki urađen na **validacionom skupu** (`results/metrics/validation_selection.txt`), gde najbolji AUPRC ima RandomForest_100 (0.8682). RandomForest i XGBoost su praktično izjednačeni — koji je „pobednik" zavisi od skupa (validacija vs test), što je očekivano kod ovako bliskih modela.
+> **Napomena o izboru modela:** Model se bira na **validacionom skupu** (`results/metrics/validation_selection.txt`), gde XGBoost ima najviši AUPRC (0.8690), tesno ispred Random Forest-a (0.8682). Isti model je najbolji i na test skupu. XGBoost koristi early stopping sa strpljivošću 50 (staje oko 121. iteracije).
 
 ---
 

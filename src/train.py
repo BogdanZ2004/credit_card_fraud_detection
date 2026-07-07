@@ -177,9 +177,10 @@ def train_models(X_train_smote, y_train_smote, X_val, y_val, best_params, models
             **best_params.get('RandomForest_150', {})
         ),
         # XGBoost koristi early stopping: prati AUPRC na validaciji i staje kad prestane da napreduje
+        # strpljivost 50 (~10% od 500) — dovoljno da preskoči privremene padove validacije
         "XGBoost": XGBClassifier(
             n_estimators=500, random_state=42, n_jobs=-1,
-            early_stopping_rounds=20, eval_metric='aucpr',
+            early_stopping_rounds=50, eval_metric='aucpr',
             **best_params.get('XGBoost', {})
         ),
     }

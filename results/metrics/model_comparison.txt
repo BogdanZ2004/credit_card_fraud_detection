@@ -29,9 +29,9 @@ ROC AUC:                0.9773
 AUPRC:                  0.8361
 
 --- XGBoost ---
-Preciznost (Precision): 0.8378
+Preciznost (Precision): 0.8493
 Odziv (Recall):         0.8378  <-- NAJBITNIJE
-F1-skor:                0.8378
-ROC AUC:                0.9704
-AUPRC:                  0.8438
+F1-skor:                0.8435
+ROC AUC:                0.9702
+AUPRC:                  0.8428
 
