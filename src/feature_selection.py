@@ -46,7 +46,7 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     svi_rezultati = []
 
     print(f"\n2. Započinjem eksperiment (Isprobavanje od 1 do {sve_kolone} kolona).")
-    print("   ⏳ UPOZORENJE: Ovo će potrajati! Trenira se 30 modela zaredom...\n")
+    print("   UPOZORENJE: Ovo će potrajati! Trenira se 30 modela zaredom...\n")
 
     # Treniramo novi model za svaki mogući broj atributa i ocenjujemo na validacionom skupu
     for k in range(1, sve_kolone + 1):
@@ -89,13 +89,13 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         f.write("Sortirano primarno po najboljem Odzivu, a sekundarno po Preciznosti.\n\n")
 
         for index, row in rezultati_df.iterrows():
-            f.write(f"🏆 MESTO #{index + 1} | Korišćeno {row['Broj_Atributa']} atributa\n")
+            f.write(f"MESTO #{index + 1} | Korišćeno {row['Broj_Atributa']} atributa\n")
             f.write(f"   Odziv (Recall):  {row['Odziv_Recall']:.4f}\n")
             f.write(f"   Preciznost:      {row['Preciznost_Precision']:.4f}\n")
             f.write(f"   Korišćene kolone: {row['Kolone']}\n")
             f.write("-" * 65 + "\n")
 
-    print(f"\n✅ Apsolutno sve je završeno!")
+    print(f"\nApsolutno sve je završeno!")
     print(f"Rang lista je sačuvana u: {fajl_putanja}")
 
 if __name__ == "__main__":
