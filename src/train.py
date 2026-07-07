@@ -52,14 +52,6 @@ SEARCH_SPACES = {
     },
 }
 
-# 24 najvažnija atributa određena analizom važnosti iz RandomForest_100 modela
-TOP_24_FEATURES = [
-    'V14', 'V10', 'V4', 'V12', 'V17', 'V3', 'V11', 'V16',
-    'V2', 'V9', 'V7', 'V8', 'V21', 'V18', 'V19', 'Hour',
-    'V5', 'V27', 'V1', 'V6', 'V13', 'V20', 'Scaled_Amount', 'V26'
-]
-
-
 def get_base_models():
     # n_jobs=1 jer RandomizedSearchCV već paralelizuje foldove — dvostruka paralelizacija pravi konflikte
     return {
@@ -105,11 +97,6 @@ def scale_features(X_train, X_val, X_test, models_dir):
     # Čuvamo scaler kako bi ga app.py mogao koristiti pri predikciji
     joblib.dump(scaler, os.path.join(models_dir, 'scaler.pkl'))
     return X_train, X_val, X_test
-
-
-def select_features(X_train, X_val, X_test):
-    # Zadržavamo samo 24 najvažnija atributa i odbacujemo ostatak
-    return X_train[TOP_24_FEATURES], X_val[TOP_24_FEATURES], X_test[TOP_24_FEATURES]
 
 
 def apply_smote(X_train, y_train, random_state=42):
@@ -212,19 +199,16 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n3. Skaliranje 'Amount' kolone (fit samo na trening skupu)...")
     X_train, X_val, X_test = scale_features(X_train, X_val, X_test, models_dir)
 
-    print("\n4. Odabir 24 najbitnija atributa...")
-    X_train, X_val, X_test = select_features(X_train, X_val, X_test)
-
-    print("\n5. Podešavanje hiperparametara (RandomizedSearchCV, SMOTE unutar folda)...")
+    print("\n4. Podešavanje hiperparametara (RandomizedSearchCV, SMOTE unutar folda)...")
     best_params = tune_hyperparameters(X_train, y_train, metrics_dir)
 
-    print("\n6. Primena SMOTE tehnike SAMO na Trening setu...")
+    print("\n5. Primena SMOTE tehnike SAMO na Trening setu...")
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
 
-    print("\n7. Treniranje finalnih modela sa najboljim parametrima...")
+    print("\n6. Treniranje finalnih modela sa najboljim parametrima...")
     train_models(X_train_smote, y_train_smote, best_params, models_dir)
 
-    print("\n8. Čuvanje Validacionog i Test seta za evaluaciju...")
+    print("\n7. Čuvanje Validacionog i Test seta za evaluaciju...")
     val_df = X_val.copy()
     val_df['Class'] = y_val
     val_df.to_csv(val_data_path, index=False)
