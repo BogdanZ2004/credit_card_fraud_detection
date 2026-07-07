@@ -16,7 +16,7 @@ def run_eda(input_path, figures_dir):
     # Grafik koji prikazuje koliko ima legitimnih a koliko prevarantskih transakcija
     print("1. Generisanje grafika raspodele klasa...")
     plt.figure(figsize=(8, 5))
-    ax = sns.countplot(x='Class', data=df, palette='Set2')
+    ax = sns.countplot(x='Class', hue='Class', data=df, palette='Set2', legend=False)
     plt.title('Raspodela klasa (0: Legitimne, 1: Prevare)', fontsize=14)
     # Logaritamska skala zbog ogromne razlike između klasa
     plt.yscale('log')
