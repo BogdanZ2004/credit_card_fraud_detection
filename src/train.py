@@ -59,7 +59,7 @@ def get_base_models():
         "DecisionTree":       DecisionTreeClassifier(random_state=42),
         "RandomForest_100":   RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=1),
         "RandomForest_150":   RandomForestClassifier(n_estimators=150, random_state=42, n_jobs=1),
-        # XGBoost: n_estimators=50 samo radi brzine pretrage; finalni broj stabala određuje early stopping
+        # XGBoost: n_estimators=50 samo radi brzine pretrage; finalno treniranje koristi 100
         "XGBoost":            XGBClassifier(n_estimators=50, random_state=42, n_jobs=1),
     }
 
@@ -156,7 +156,7 @@ def tune_hyperparameters(X_train, y_train, metrics_dir):
     return best_params_all
 
 
-def train_models(X_train_smote, y_train_smote, X_val, y_val, best_params, models_dir):
+def train_models(X_train_smote, y_train_smote, best_params, models_dir):
     os.makedirs(models_dir, exist_ok=True)
 
     # Finalni modeli se treniraju sa najboljim hiperparametrima i n_jobs=-1 za brzinu
@@ -177,23 +177,16 @@ def train_models(X_train_smote, y_train_smote, X_val, y_val, best_params, models
             n_estimators=150, random_state=42, n_jobs=-1,
             **best_params.get('RandomForest_150', {})
         ),
-        # XGBoost koristi early stopping: prati AUPRC na validaciji i staje kad prestane da napreduje
-        # strpljivost 50 (~10% od 500) — dovoljno da preskoči privremene padove validacije
+        # XGBoost sa fiksnim brojem stabala — validacioni skup ostaje samo za izbor modela
         "XGBoost": XGBClassifier(
-            n_estimators=500, random_state=42, n_jobs=-1,
-            early_stopping_rounds=50, eval_metric='aucpr',
+            n_estimators=100, random_state=42, n_jobs=-1,
             **best_params.get('XGBoost', {})
         ),
     }
 
     for name, model in models.items():
         print(f"   -> Treniram {name}...")
-        if name == "XGBoost":
-            # eval_set je validacioni skup — na osnovu njega early stopping bira najbolju iteraciju
-            model.fit(X_train_smote, y_train_smote, eval_set=[(X_val, y_val)], verbose=False)
-            print(f"      [Early stopping: najbolja iteracija = {model.best_iteration}]")
-        else:
-            model.fit(X_train_smote, y_train_smote)
+        model.fit(X_train_smote, y_train_smote)
         joblib.dump(model, os.path.join(models_dir, f"{name}.pkl"))
         print(f"      [Sačuvano: {name}.pkl]")
 
@@ -214,8 +207,8 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n5. Primena SMOTE tehnike SAMO na Trening setu...")
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
 
-    print("\n6. Treniranje finalnih modela (XGBoost sa early stopping-om na validaciji)...")
-    train_models(X_train_smote, y_train_smote, X_val, y_val, best_params, models_dir)
+    print("\n6. Treniranje finalnih modela sa najboljim parametrima...")
+    train_models(X_train_smote, y_train_smote, best_params, models_dir)
 
     print("\n7. Čuvanje Validacionog i Test seta za evaluaciju...")
     val_df = X_val.copy()

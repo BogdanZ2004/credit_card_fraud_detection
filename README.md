@@ -112,11 +112,11 @@ uv run python pipeline.py
 | Stablo odlučivanja | 0.0664 | 0.7703 | 0.1223 | 0.8977 | 0.6931 |
 | Random Forest (100) | 0.8429 | 0.7973 | 0.8194 | 0.9710 | 0.8339 |
 | Random Forest (150) | 0.8551 | 0.7973 | 0.8252 | 0.9773 | 0.8361 |
-| **XGBoost** | **0.8493** | **0.8378** | **0.8435** | **0.9702** | **0.8428** |
+| **XGBoost** | **0.8493** | **0.8378** | **0.8435** | **0.9694** | **0.8415** |
 
-**Najbolji model: XGBoost** — najviši AUPRC i na validaciji (0.8690) i na test skupu (0.8428), uz najviši Odziv (0.8378).
+**Izbor modela (na validaciji): RandomForest_100** (AUPRC 0.8682). Tri najbolja modela — RandomForest_100, RandomForest_150 i XGBoost — praktično su izjednačena na validaciji (0.8682 / 0.8681 / 0.8674). Na test skupu XGBoost ima najviši AUPRC (0.8415) i najviši Odziv (0.8378).
 
-> **Napomena o izboru modela:** Model se bira na **validacionom skupu** (`results/metrics/validation_selection.txt`), gde XGBoost ima najviši AUPRC (0.8690), tesno ispred Random Forest-a (0.8682). Isti model je najbolji i na test skupu. XGBoost koristi early stopping sa strpljivošću 50 (staje oko 121. iteracije).
+> **Napomena o izboru modela:** Model se bira **isključivo** na validacionom skupu (`results/metrics/validation_selection.txt`); test skup se koristi samo za finalni izveštaj i ne utiče ni na treniranje ni na izbor. Pošto su tri modela gotovo izjednačena, koji je „najbolji" zavisi od skupa (RandomForest na validaciji, XGBoost na testu).
 
 ---
 
@@ -148,6 +148,5 @@ Streamlit aplikacija omogućava interaktivnu demonstraciju sistema:
 - **Skaliranje**: `RobustScaler` na `Amount` koloni — otporan na ekstremne vrednosti karakteristične za fraud podatke
 - **Balansiranje**: SMOTE isključivo na trening skupu, unutar CV foldova
 - **Tuning**: RandomizedSearchCV, 5-fold stratifikovana unakrsna validacija, optimizovano po AUPRC
-- **Early stopping**: XGBoost prati AUPRC na validacionom skupu i staje kad prestane napredovanje (sprečava preprilagođavanje)
-- **Izbor modela**: najbolji model se bira na validacionom skupu, finalni rezultat se prijavljuje na test skupu
-- **Anti-data leakage**: podela pre skaliranja; scaler se fita samo na trening skupu; test skup nedirnut do finalne evaluacije
+- **Izbor modela**: najbolji model se bira isključivo na validacionom skupu; finalni rezultat se prijavljuje na test skupu
+- **Anti-data leakage**: podela pre skaliranja; scaler se fita samo na trening skupu; validacija služi samo za izbor; test skup nedirnut do finalne evaluacije
