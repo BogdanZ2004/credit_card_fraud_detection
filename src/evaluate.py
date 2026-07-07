@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 import joblib
 import matplotlib
@@ -69,8 +70,10 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         f.write("=== POREĐENJE MODELA ZA DETEKCIJU PREVARA ===\n\n")
 
     print("\n2. Evaluacija modela...")
-    # Lista za čuvanje ROC podataka svih modela kako bi se nacrtala zajednička kriva
+    # Liste za zajedničke grafike (ROC kriva, PR kriva, stubičasto poređenje)
     roc_curves = []
+    pr_curves = []
+    summary = []
 
     for model_file in sorted(os.listdir(models_dir)):
         # Preskačemo scaler.pkl jer nije model za klasifikaciju
@@ -96,6 +99,8 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         roc_auc = roc_auc_score(y_test, y_proba)
         fpr, tpr, _ = roc_curve(y_test, y_proba)
         roc_curves.append((model_name, fpr, tpr, roc_auc))
+        pr_curves.append((model_name, pr_recall, pr_precision, auprc))
+        summary.append((model_name, precision, recall, f1, auprc))
 
         result_text = (
             f"--- {model_name} ---\n"
@@ -138,6 +143,39 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     plt.savefig(roc_fig_path, bbox_inches='tight')
     plt.close()
     print(f"\nROC kriva sačuvana u: {roc_fig_path}")
+
+    # Zajednička Precision-Recall kriva — prikladnija od ROC-a za neuravnotežene podatke (vizualizuje AUPRC)
+    plt.figure(figsize=(8, 6))
+    for model_name, rec, prec, auprc in pr_curves:
+        plt.plot(rec, prec, label=f"{model_name} (AUPRC = {auprc:.4f})")
+    baseline = y_test.mean()  # nasumičan klasifikator = udeo prevara
+    plt.axhline(baseline, color='k', linestyle='--', label=f'Random ({baseline:.4f})')
+    plt.xlabel('Odziv (Recall)')
+    plt.ylabel('Preciznost (Precision)')
+    plt.title('Precision-Recall kriva - Poređenje modela')
+    plt.legend(loc='upper right')
+    pr_fig_path = os.path.join(figures_dir, 'pr_curve.png')
+    plt.savefig(pr_fig_path, bbox_inches='tight')
+    plt.close()
+    print(f"PR kriva sačuvana u: {pr_fig_path}")
+
+    # Stubičasti grafik: poređenje modela po ključnim metrikama (za dokumentaciju)
+    names = [s[0] for s in summary]
+    x = np.arange(len(names))
+    w = 0.25
+    plt.figure(figsize=(10, 6))
+    plt.bar(x - w, [s[4] for s in summary], w, label='AUPRC')
+    plt.bar(x,     [s[3] for s in summary], w, label='F1')
+    plt.bar(x + w, [s[2] for s in summary], w, label='Odziv')
+    plt.xticks(x, names, rotation=20, ha='right')
+    plt.ylabel('Vrednost')
+    plt.ylim(0, 1)
+    plt.title('Poređenje modela po ključnim metrikama (test skup)')
+    plt.legend()
+    bar_fig_path = os.path.join(figures_dir, 'model_comparison_chart.png')
+    plt.savefig(bar_fig_path, bbox_inches='tight')
+    plt.close()
+    print(f"Grafik poređenja sačuvan u: {bar_fig_path}")
     print(f"Sve metrike su sačuvane u: {metrics_file_path}")
 
 if __name__ == "__main__":
