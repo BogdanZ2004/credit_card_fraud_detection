@@ -59,6 +59,7 @@ def get_base_models():
         "DecisionTree":       DecisionTreeClassifier(random_state=42),
         "RandomForest_100":   RandomForestClassifier(n_estimators=100, random_state=42, n_jobs=1),
         "RandomForest_150":   RandomForestClassifier(n_estimators=150, random_state=42, n_jobs=1),
+        # XGBoost: n_estimators=50 samo radi brzine pretrage; finalni broj stabala određuje early stopping
         "XGBoost":            XGBClassifier(n_estimators=50, random_state=42, n_jobs=1),
     }
 
@@ -94,7 +95,7 @@ def scale_features(X_train, X_val, X_test, models_dir):
     X_val   = X_val.drop('Amount', axis=1)
     X_test  = X_test.drop('Amount', axis=1)
 
-    # Čuvamo scaler kako bi ga app.py mogao koristiti pri predikciji
+    # Čuvamo scaler da app.py može da vrati skalirani iznos u originalni (čitljiv) iznos
     joblib.dump(scaler, os.path.join(models_dir, 'scaler.pkl'))
     return X_train, X_val, X_test
 

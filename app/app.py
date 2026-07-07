@@ -14,6 +14,11 @@ TEST_DATA_PATH = os.path.join(BASE_DIR, "data", "processed", "test_set.csv")
 def load_data():
     return pd.read_csv(TEST_DATA_PATH)
 
+@st.cache_resource
+def load_scaler():
+    # Scaler služi da skalirani iznos vratimo u čitljiv (originalni) iznos za prikaz
+    return joblib.load(os.path.join(MODELS_DIR, "scaler.pkl"))
+
 # Učitavamo sve modele osim scalera koji nije klasifikator
 available_models = [f for f in os.listdir(MODELS_DIR) if f.endswith('.pkl') and f != 'scaler.pkl']
 model_names = [f.replace('.pkl', '') for f in available_models]
@@ -66,10 +71,14 @@ with col2:
 if st.session_state.selected_tx is not None:
     tx_data = st.session_state.selected_tx.iloc[0]
 
+    # Vraćamo skalirani iznos u originalni (čitljiv) iznos pomoću scaler-a
+    scaler = load_scaler()
+    stvarni_iznos = scaler.inverse_transform([[tx_data['Scaled_Amount']]])[0][0]
+
     st.write("### Detalji presretnute transakcije:")
     st.json({
         "Sat transakcije (Hour)": f"{int(tx_data['Hour'])}:00",
-        "Skalirani Iznos": round(tx_data['Scaled_Amount'], 4),
+        "Iznos transakcije": f"{stvarni_iznos:.2f}",
         "V1 parametar": round(tx_data['V1'], 4),
         "V2 parametar": round(tx_data['V2'], 4)
     })
