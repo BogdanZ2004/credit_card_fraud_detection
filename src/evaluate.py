@@ -1,6 +1,8 @@
 import pandas as pd
 import os
 import joblib
+import matplotlib
+matplotlib.use('Agg')  # crtanje u fajl bez ekrana (bezbedno na serveru)
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import (
@@ -50,33 +52,6 @@ def select_best_model_on_validation(val_data_path, models_dir, metrics_dir):
     print(f"   Najbolji model na validaciji: {best_name} (AUPRC = {best_auprc:.4f})")
     print(f"   Sačuvano u: {results_file}")
     return best_name
-
-
-def check_overfitting(X_train, y_train, X_val, y_val, models_dir, metrics_dir):
-    # Poredi AUPRC na trening i validacionom skupu — veliki jaz znači preprilagođavanje
-    print("Provera preprilagođavanja (train vs validacija)...")
-    os.makedirs(metrics_dir, exist_ok=True)
-    results_file = os.path.join(metrics_dir, 'overfitting_check.txt')
-
-    def auprc(model, X, y):
-        proba = model.predict_proba(X)[:, 1]
-        pr_precision, pr_recall, _ = precision_recall_curve(y, proba)
-        return auc(pr_recall, pr_precision)
-
-    with open(results_file, 'w', encoding='utf-8') as f:
-        f.write("=== PROVERA PREPRILAGOĐAVANJA (AUPRC) ===\n")
-        f.write("Veliki jaz između trening i validacije ukazuje na preprilagođavanje.\n\n")
-        f.write(f"{'Model':22s} {'Train':>8s} {'Val':>8s} {'Jaz':>8s}\n")
-        for model_file in sorted(os.listdir(models_dir)):
-            if not model_file.endswith('.pkl') or model_file == 'scaler.pkl':
-                continue
-            name = model_file.replace('.pkl', '')
-            model = joblib.load(os.path.join(models_dir, model_file))
-            tr = auprc(model, X_train, y_train)
-            vl = auprc(model, X_val, y_val)
-            f.write(f"{name:22s} {tr:8.4f} {vl:8.4f} {tr - vl:8.4f}\n")
-
-    print(f"   Sačuvano u: {results_file}")
 
 
 def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):

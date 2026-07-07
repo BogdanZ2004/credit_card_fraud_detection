@@ -1,4 +1,6 @@
 import pandas as pd
+import matplotlib
+matplotlib.use('Agg')  # crtanje u fajl bez ekrana (bezbedno na serveru)
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os

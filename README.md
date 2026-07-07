@@ -59,7 +59,7 @@ Svaka transakcija sadrži:
 ├── models/                        # Istrenirani modeli (.pkl) i scaler.pkl
 ├── results/
 │   ├── figures/                   # Matrice konfuzije, ROC kriva, EDA grafici
-│   └── metrics/                   # Poređenje na testu, tuning, izbor na validaciji, preprilagođavanje, rang atributa
+│   └── metrics/                   # Poređenje na testu, tuning, izbor na validaciji, rang atributa
 ├── src/
 │   ├── data_preparation.py        # Priprema i čišćenje podataka
 │   ├── eda_analysis.py            # Eksplorativna analiza (EDA)
@@ -112,11 +112,11 @@ uv run python pipeline.py
 | Stablo odlučivanja | 0.0664 | 0.7703 | 0.1223 | 0.8977 | 0.6931 |
 | Random Forest (100) | 0.8429 | 0.7973 | 0.8194 | 0.9710 | 0.8339 |
 | Random Forest (150) | 0.8551 | 0.7973 | 0.8252 | 0.9773 | 0.8361 |
-| **XGBoost** | **0.8158** | **0.8378** | **0.8267** | **0.9738** | **0.8459** |
+| **XGBoost** | **0.8378** | **0.8378** | **0.8378** | **0.9704** | **0.8438** |
 
-**Najbolji model na test skupu: XGBoost** — najviši AUPRC (0.8459) i najviši Odziv (0.8378).
+**Najbolji model na test skupu: XGBoost** — najviši AUPRC (0.8438) i najviši Odziv (0.8378).
 
-> **Napomena o izboru modela:** Tabela iznad poredi sve modele na test skupu. Sam izbor modela je metodološki urađen na **validacionom skupu** (`results/metrics/validation_selection.txt`), gde najbolji AUPRC ima RandomForest_100 (0.8682). RandomForest i XGBoost su praktično izjednačeni (razlika ~0.01 AUPRC) — koji je „pobednik" zavisi od skupa (validacija vs test), što je očekivano kod ovako bliskih modela. Provera preprilagođavanja je u `results/metrics/overfitting_check.txt`.
+> **Napomena o izboru modela:** Tabela iznad poredi sve modele na test skupu. Sam izbor modela je metodološki urađen na **validacionom skupu** (`results/metrics/validation_selection.txt`), gde najbolji AUPRC ima RandomForest_100 (0.8682). RandomForest i XGBoost su praktično izjednačeni — koji je „pobednik" zavisi od skupa (validacija vs test), što je očekivano kod ovako bliskih modela.
 
 ---
 
@@ -148,4 +148,6 @@ Streamlit aplikacija omogućava interaktivnu demonstraciju sistema:
 - **Skaliranje**: `RobustScaler` na `Amount` koloni — otporan na ekstremne vrednosti karakteristične za fraud podatke
 - **Balansiranje**: SMOTE isključivo na trening skupu, unutar CV foldova
 - **Tuning**: RandomizedSearchCV, 5-fold stratifikovana unakrsna validacija, optimizovano po AUPRC
+- **Early stopping**: XGBoost prati AUPRC na validacionom skupu i staje kad prestane napredovanje (sprečava preprilagođavanje)
+- **Izbor modela**: najbolji model se bira na validacionom skupu, finalni rezultat se prijavljuje na test skupu
 - **Anti-data leakage**: podela pre skaliranja; scaler se fita samo na trening skupu; test skup nedirnut do finalne evaluacije
