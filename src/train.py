@@ -177,7 +177,7 @@ def train_models(X_train_smote, y_train_smote, best_params, models_dir):
             n_estimators=150, random_state=42, n_jobs=-1,
             **best_params.get('RandomForest_150', {})
         ),
-        # XGBoost sa fiksnim brojem stabala — validacioni skup ostaje samo za izbor modela
+        # XGBoost sa fiksnim brojem stabala (100) i hiperparametrima iz pretrage
         "XGBoost": XGBClassifier(
             n_estimators=100, random_state=42, n_jobs=-1,
             **best_params.get('XGBoost', {})
