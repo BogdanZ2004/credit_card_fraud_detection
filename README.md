@@ -59,7 +59,7 @@ Svaka transakcija sadrži:
 ├── models/                        # Istrenirani modeli (.pkl) i scaler.pkl
 ├── results/
 │   ├── figures/                   # Matrice konfuzije, ROC kriva, EDA grafici
-│   └── metrics/                   # model_comparison.txt, tuning_results.txt
+│   └── metrics/                   # model_comparison.txt, tuning_results.txt, rang_lista_atributa.txt
 ├── src/
 │   ├── data_preparation.py        # Priprema i čišćenje podataka
 │   ├── eda_analysis.py            # Eksplorativna analiza (EDA)
@@ -69,7 +69,9 @@ Svaka transakcija sadrži:
 ├── app/
 │   └── app.py                     # Streamlit web aplikacija
 ├── pipeline.py                    # Glavni ulaz — pokreće ceo pipeline
-└── requirements.txt
+├── pyproject.toml                 # Zavisnosti projekta (koristi uv sync)
+├── uv.lock                        # Zaključane verzije zavisnosti
+└── requirements.txt               # Zavisnosti za pip (alternativa)
 ```
 
 ---
