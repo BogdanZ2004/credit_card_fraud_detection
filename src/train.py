@@ -11,6 +11,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
+from evaluate import check_overfitting
+
 # Prostori pretrage hiperparametara za svaki model koji se koriste u RandomizedSearchCV
 SEARCH_SPACES = {
     "LogisticRegression": {
@@ -208,7 +210,10 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n6. Treniranje finalnih modela sa najboljim parametrima...")
     train_models(X_train_smote, y_train_smote, best_params, models_dir)
 
-    print("\n7. Čuvanje Validacionog i Test seta za evaluaciju...")
+    print("\n7. Provera preprilagođavanja (train vs validacija)...")
+    check_overfitting(X_train, y_train, X_val, y_val, models_dir, metrics_dir)
+
+    print("\n8. Čuvanje Validacionog i Test seta za evaluaciju...")
     val_df = X_val.copy()
     val_df['Class'] = y_val
     val_df.to_csv(val_data_path, index=False)

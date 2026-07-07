@@ -1,0 +1,9 @@
+=== PROVERA PREPRILAGOĐAVANJA (AUPRC) ===
+Veliki jaz između trening i validacije ukazuje na preprilagođavanje.
+
+Model                     Train      Val      Jaz
+DecisionTree             0.8939   0.7556   0.1383
+LogisticRegression       0.7923   0.7908   0.0015
+RandomForest_100         1.0000   0.8682   0.1318
+RandomForest_150         1.0000   0.8681   0.1319
+XGBoost                  1.0000   0.8574   0.1426

@@ -59,7 +59,7 @@ Svaka transakcija sadrži:
 ├── models/                        # Istrenirani modeli (.pkl) i scaler.pkl
 ├── results/
 │   ├── figures/                   # Matrice konfuzije, ROC kriva, EDA grafici
-│   └── metrics/                   # model_comparison.txt, tuning_results.txt, rang_lista_atributa.txt
+│   └── metrics/                   # Poređenje na testu, tuning, izbor na validaciji, preprilagođavanje, rang atributa
 ├── src/
 │   ├── data_preparation.py        # Priprema i čišćenje podataka
 │   ├── eda_analysis.py            # Eksplorativna analiza (EDA)
@@ -114,7 +114,9 @@ uv run python pipeline.py
 | Random Forest (150) | 0.8551 | 0.7973 | 0.8252 | 0.9773 | 0.8361 |
 | **XGBoost** | **0.8158** | **0.8378** | **0.8267** | **0.9738** | **0.8459** |
 
-**Najbolji model: XGBoost** — najviši AUPRC (0.8459) i najviši Odziv (0.8378).
+**Najbolji model na test skupu: XGBoost** — najviši AUPRC (0.8459) i najviši Odziv (0.8378).
+
+> **Napomena o izboru modela:** Tabela iznad poredi sve modele na test skupu. Sam izbor modela je metodološki urađen na **validacionom skupu** (`results/metrics/validation_selection.txt`), gde najbolji AUPRC ima RandomForest_100 (0.8682). RandomForest i XGBoost su praktično izjednačeni (razlika ~0.01 AUPRC) — koji je „pobednik" zavisi od skupa (validacija vs test), što je očekivano kod ovako bliskih modela. Provera preprilagođavanja je u `results/metrics/overfitting_check.txt`.
 
 ---
 
