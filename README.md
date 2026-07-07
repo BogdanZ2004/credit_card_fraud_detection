@@ -35,7 +35,7 @@ Svaka transakcija sadrži:
 ### Podešavanje hiperparametara (`src/train.py` — `tune_hyperparameters`)
 - **RandomizedSearchCV** sa 5-fold stratifikovanom unakrsnom validacijom.
 - Optimizovano po **AUPRC** — najpouzdanija metrika za neuravnotežene skupove.
-- Hiperparametri se biraju na validacionom skupu; test skup se koristi samo jednom, na kraju.
+- Hiperparametri se biraju unakrsnom validacijom (5-fold) na trening skupu; test skup se koristi samo jednom, na kraju.
 
 ### Evaluacija (`src/evaluate.py`)
 - Metrike: Preciznost, Odziv, F1, ROC AUC, AUPRC.
