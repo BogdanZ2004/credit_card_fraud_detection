@@ -14,6 +14,44 @@ from sklearn.metrics import (
     confusion_matrix
 )
 
+def select_best_model_on_validation(val_data_path, models_dir, metrics_dir):
+    # Poredi sve istrenirane modele na validacionom skupu i bira najbolji (po AUPRC)
+    print("Izbor najboljeg modela na validacionom skupu...")
+    df = pd.read_csv(val_data_path)
+    X_val = df.drop('Class', axis=1)
+    y_val = df['Class']
+
+    os.makedirs(metrics_dir, exist_ok=True)
+    results_file = os.path.join(metrics_dir, 'validation_selection.txt')
+
+    rezultati = []
+    for model_file in sorted(os.listdir(models_dir)):
+        if not model_file.endswith('.pkl') or model_file == 'scaler.pkl':
+            continue
+        model_name = model_file.replace('.pkl', '')
+        model = joblib.load(os.path.join(models_dir, model_file))
+        y_proba = model.predict_proba(X_val)[:, 1]
+        pr_precision, pr_recall, _ = precision_recall_curve(y_val, y_proba)
+        auprc = auc(pr_recall, pr_precision)
+        rezultati.append((model_name, auprc))
+
+    # Najbolji je onaj sa najvišim AUPRC na validaciji
+    rezultati.sort(key=lambda x: x[1], reverse=True)
+    best_name, best_auprc = rezultati[0]
+
+    with open(results_file, 'w', encoding='utf-8') as f:
+        f.write("=== IZBOR MODELA NA VALIDACIONOM SKUPU (po AUPRC) ===\n")
+        f.write("Model se bira ovde; finalni rezultat se prijavljuje na test skupu.\n\n")
+        for name, auprc in rezultati:
+            oznaka = "  <-- NAJBOLJI" if name == best_name else ""
+            f.write(f"{name}: AUPRC = {auprc:.4f}{oznaka}\n")
+        f.write(f"\nIzabrani model: {best_name} (AUPRC = {best_auprc:.4f})\n")
+
+    print(f"   Najbolji model na validaciji: {best_name} (AUPRC = {best_auprc:.4f})")
+    print(f"   Sačuvano u: {results_file}")
+    return best_name
+
+
 def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     print("1. Učitavanje Test seta...")
     df = pd.read_csv(test_data_path)
@@ -101,9 +139,11 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     print(f"Sve metrike su sačuvane u: {metrics_file_path}")
 
 if __name__ == "__main__":
+    VAL_FILE = "../data/processed/val_set.csv"
     TEST_FILE = "../data/processed/test_set.csv"
     MODELS_DIR = "../models"
     FIGURES_DIR = "../results/figures"
     METRICS_DIR = "../results/metrics"
 
+    select_best_model_on_validation(VAL_FILE, MODELS_DIR, METRICS_DIR)
     evaluate_models(TEST_FILE, MODELS_DIR, FIGURES_DIR, METRICS_DIR)
