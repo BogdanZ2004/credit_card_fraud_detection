@@ -207,7 +207,7 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     plt.xlabel('Odziv (Recall)')
     plt.ylabel('Preciznost (Precision)')
     plt.title('Precision-Recall kriva - Poređenje modela')
-    plt.legend(loc='upper right')
+    plt.legend(loc='lower left')
     pr_fig_path = os.path.join(figures_dir, 'pr_curve.png')
     plt.savefig(pr_fig_path, bbox_inches='tight')
     plt.close()
