@@ -9,19 +9,26 @@ def prepare_data(input_path, output_path):
         print(f"Greška: Fajl {input_path} nije pronađen. Proveri putanju!")
         return
 
-    print("1. Transformacija 'Time' kolone u 'Hour'...")
+    # Uklanjanje tačnih duplikata na SIROVIM podacima (pre Time->Hour) — artefakti su
+    # (isti Time, iste V vrednosti, isti iznos). Radi se ovde da isti primer ne bi
+    # završio i u trening i u test skupu posle podele (sprečavanje curenja).
+    pre = len(df)
+    df = df.drop_duplicates()
+    print(f"1. Uklonjeno {pre - len(df)} tačnih duplikata (ostalo {len(df)} redova)")
+
+    print("2. Transformacija 'Time' kolone u 'Hour'...")
     # Sekunde pretvaramo u sat u toku dana jer je doba dana bitno za detekciju prevare
     df['Hour'] = (df['Time'] // 3600) % 24
     df = df.drop(['Time'], axis=1)
 
     # Skaliranje Amount-a se radi u train.py nakon podele kako bi se izbeglo curenje podataka
 
-    print("2. Reorganizacija kolona...")
+    print("3. Reorganizacija kolona...")
     # Hour i Amount idu na početak, Class na kraj
     cols = ['Hour', 'Amount'] + [col for col in df.columns if col not in ['Hour', 'Amount', 'Class']] + ['Class']
     df = df[cols]
 
-    print("3. Čuvanje procesuiranih podataka...")
+    print("4. Čuvanje procesuiranih podataka...")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     print(f"Gotovo! Podaci su uspešno sačuvani na: {output_path}")

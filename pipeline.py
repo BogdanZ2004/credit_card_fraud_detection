@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 from data_preparation import prepare_data
 from eda_analysis import run_eda
 from train import train_pipeline
-from evaluate import select_best_model_on_validation, evaluate_models
+from evaluate import select_best_model_on_validation, optimize_threshold, evaluate_models
 
 # Apsolutne putanje ka svim folderima i fajlovima projekta
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("KORAK 2: Eksplorativna analiza podataka (EDA)")
     print("=" * 60)
-    run_eda(PROCESSED, FIGURES_DIR)
+    run_eda(PROCESSED, FIGURES_DIR, METRICS_DIR)
 
     print("\n" + "=" * 60)
     print("KORAK 3: Treniranje modela")
@@ -41,7 +41,12 @@ if __name__ == "__main__":
     select_best_model_on_validation(VAL_SET, MODELS_DIR, METRICS_DIR)
 
     print("\n" + "=" * 60)
-    print("KORAK 5: Evaluacija modela na test skupu")
+    print("KORAK 5: Podešavanje praga odluke na validaciji (F2)")
+    print("=" * 60)
+    optimize_threshold(VAL_SET, MODELS_DIR, METRICS_DIR)
+
+    print("\n" + "=" * 60)
+    print("KORAK 6: Evaluacija modela na test skupu")
     print("=" * 60)
     evaluate_models(TEST_SET, MODELS_DIR, FIGURES_DIR, METRICS_DIR)
 

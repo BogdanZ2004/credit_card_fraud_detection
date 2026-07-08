@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
-def run_eda(input_path, figures_dir):
+def run_eda(input_path, figures_dir, metrics_dir):
     print("Učitavanje podataka za analizu...")
     try:
         df = pd.read_csv(input_path)
@@ -14,6 +14,25 @@ def run_eda(input_path, figures_dir):
         return
 
     os.makedirs(figures_dir, exist_ok=True)
+    os.makedirs(metrics_dir, exist_ok=True)
+
+    # Provera kvaliteta podataka: nedostajuće vrednosti i duplikati
+    print("0. Provera kvaliteta podataka (nedostajuće vrednosti, duplikati)...")
+    ukupno = len(df)
+    broj_prevara = int(df['Class'].sum())
+    nedostajuce = int(df.isnull().sum().sum())
+    duplikati = int(df.duplicated().sum())
+
+    summary_path = os.path.join(metrics_dir, 'eda_summary.txt')
+    with open(summary_path, 'w', encoding='utf-8') as f:
+        f.write("=== EDA SAŽETAK ===\n\n")
+        f.write(f"Ukupno transakcija:       {ukupno}\n")
+        f.write(f"Legitimne (0):            {ukupno - broj_prevara}\n")
+        f.write(f"Prevare (1):              {broj_prevara} ({broj_prevara / ukupno * 100:.3f}%)\n")
+        f.write(f"Nedostajuće vrednosti:    {nedostajuce}\n")
+        f.write(f"Duplikati (redovi):       {duplikati}\n")
+    print(f"   Nedostajuće vrednosti: {nedostajuce} | Duplikati: {duplikati}")
+    print(f"   Sažetak sačuvan u: {summary_path}")
 
     # Grafik koji prikazuje koliko ima legitimnih a koliko prevarantskih transakcija
     print("1. Generisanje grafika raspodele klasa...")
@@ -58,5 +77,6 @@ def run_eda(input_path, figures_dir):
 if __name__ == "__main__":
     INPUT_FILE = "../data/processed/creditcard_processed.csv"
     FIGURES_DIR = "../results/figures"
+    METRICS_DIR = "../results/metrics"
 
-    run_eda(INPUT_FILE, FIGURES_DIR)
+    run_eda(INPUT_FILE, FIGURES_DIR, METRICS_DIR)

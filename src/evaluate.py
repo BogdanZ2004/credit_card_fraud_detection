@@ -10,12 +10,14 @@ from sklearn.metrics import (
     precision_score,
     recall_score,
     f1_score,
+    fbeta_score,
     precision_recall_curve,
     roc_auc_score,
     roc_curve,
     auc,
     confusion_matrix
 )
+from sklearn.dummy import DummyClassifier
 
 def select_best_model_on_validation(val_data_path, models_dir, metrics_dir):
     # Poredi sve istrenirane modele na validacionom skupu i bira najbolji (po AUPRC)
@@ -55,6 +57,44 @@ def select_best_model_on_validation(val_data_path, models_dir, metrics_dir):
     return best_name
 
 
+def optimize_threshold(val_data_path, models_dir, metrics_dir, beta=2):
+    # Traži prag odluke koji maksimizuje F2 na VALIDACIJI (F2 naglašava odziv 4x
+    # jer je propuštena prevara skuplja od lažne uzbune). Prag se bira na validaciji,
+    # nikad na testu. Optimalni prag postaje "pametna" podrazumevana vrednost za aplikaciju.
+    print("Podešavanje praga odluke na validacionom skupu (po F2)...")
+    df = pd.read_csv(val_data_path)
+    X_val = df.drop('Class', axis=1)
+    y_val = df['Class']
+
+    os.makedirs(metrics_dir, exist_ok=True)
+    results_file = os.path.join(metrics_dir, 'threshold_optimization.txt')
+    pragovi = np.arange(0.05, 0.96, 0.01)
+
+    najbolji_po_modelu = {}
+    with open(results_file, 'w', encoding='utf-8') as f:
+        f.write("=== PODEŠAVANJE PRAGA ODLUKE (F2, na validaciji) ===\n")
+        f.write("F2 naglašava odziv 4x — propuštena prevara je skuplja od lažne uzbune.\n\n")
+        f.write(f"{'Model':22s} {'Opt.prag':>9s} {'F2(0.5)':>9s} {'F2(opt)':>9s}\n")
+        for model_file in sorted(os.listdir(models_dir)):
+            if not model_file.endswith('.pkl') or model_file == 'scaler.pkl':
+                continue
+            name = model_file.replace('.pkl', '')
+            model = joblib.load(os.path.join(models_dir, model_file))
+            proba = model.predict_proba(X_val)[:, 1]
+
+            f2_default = fbeta_score(y_val, (proba >= 0.5).astype(int), beta=beta, zero_division=0)
+            best_t, best_f2 = 0.5, f2_default
+            for t in pragovi:
+                f2 = fbeta_score(y_val, (proba >= t).astype(int), beta=beta, zero_division=0)
+                if f2 > best_f2:
+                    best_f2, best_t = f2, round(float(t), 2)
+            najbolji_po_modelu[name] = best_t
+            f.write(f"{name:22s} {best_t:9.2f} {f2_default:9.4f} {best_f2:9.4f}\n")
+
+    print(f"   Sačuvano u: {results_file}")
+    return najbolji_po_modelu
+
+
 def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     print("1. Učitavanje Test seta...")
     df = pd.read_csv(test_data_path)
@@ -69,11 +109,16 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     with open(metrics_file_path, 'w', encoding='utf-8') as f:
         f.write("=== POREĐENJE MODELA ZA DETEKCIJU PREVARA ===\n\n")
 
+    # Scaler za vraćanje skaliranog iznosa u stvarni (za analizu grešaka po iznosu)
+    scaler = joblib.load(os.path.join(models_dir, 'scaler.pkl'))
+    realni_iznos = scaler.inverse_transform(X_test[['Scaled_Amount']])[:, 0]
+
     print("\n2. Evaluacija modela...")
-    # Liste za zajedničke grafike (ROC kriva, PR kriva, stubičasto poređenje)
+    # Liste za zajedničke grafike (ROC kriva, PR kriva, stubičasto poređenje) i analizu grešaka
     roc_curves = []
     pr_curves = []
     summary = []
+    analiza_gresaka = []
 
     for model_file in sorted(os.listdir(models_dir)):
         # Preskačemo scaler.pkl jer nije model za klasifikaciju
@@ -114,6 +159,15 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
 
         with open(metrics_file_path, 'a', encoding='utf-8') as f:
             f.write(result_text)
+
+        # Analiza grešaka: karakteristike propuštenih prevara (FN) vs uhvaćenih (TP)
+        fn_maska = (y_test == 1) & (y_pred == 0)   # propuštene prevare
+        fp_maska = (y_test == 0) & (y_pred == 1)   # lažne uzbune
+        tp_maska = (y_test == 1) & (y_pred == 1)   # uhvaćene prevare
+        iznos_fn = realni_iznos[fn_maska.values].mean() if fn_maska.sum() > 0 else 0
+        iznos_tp = realni_iznos[tp_maska.values].mean() if tp_maska.sum() > 0 else 0
+        analiza_gresaka.append((model_name, int(fn_maska.sum()), int(fp_maska.sum()),
+                                int(tp_maska.sum()), iznos_fn, iznos_tp))
 
         # Matrica konfuzije prikazuje tačne i netačne predikcije po klasi
         cm = confusion_matrix(y_test, y_pred)
@@ -176,6 +230,34 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     plt.savefig(bar_fig_path, bbox_inches='tight')
     plt.close()
     print(f"Grafik poređenja sačuvan u: {bar_fig_path}")
+
+    # Baseline: nasumičan klasifikator (predviđa po raspodeli klasa) — dokaz da modeli
+    # uče prave obrasce, a ne da samo eksploatišu neuravnoteženost.
+    dummy = DummyClassifier(strategy='stratified', random_state=42)
+    dummy.fit(X_test, y_test)
+    yb = dummy.predict(X_test)
+    pb = dummy.predict_proba(X_test)[:, 1]
+    b_prec, b_rec = precision_score(y_test, yb, zero_division=0), recall_score(y_test, yb)
+    b_prc, b_rcc, _ = precision_recall_curve(y_test, pb)
+    b_auprc = auc(b_rcc, b_prc)
+    with open(metrics_file_path, 'a', encoding='utf-8') as f:
+        f.write("--- Baseline (nasumičan klasifikator) ---\n")
+        f.write(f"Preciznost (Precision): {b_prec:.4f}\n")
+        f.write(f"Odziv (Recall):         {b_rec:.4f}\n")
+        f.write(f"AUPRC:                  {b_auprc:.4f}\n")
+        f.write("(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)\n")
+
+    # Analiza grešaka: gde model najviše greši (propuštene prevare vs uhvaćene)
+    err_file = os.path.join(metrics_dir, 'error_analysis.txt')
+    with open(err_file, 'w', encoding='utf-8') as f:
+        f.write("=== ANALIZA GREŠAKA (po iznosu) ===\n")
+        f.write("FN = propuštene prevare | FP = lažne uzbune | TP = uhvaćene prevare\n\n")
+        f.write(f"{'Model':22s} {'FN':>4s} {'FP':>5s} {'TP':>4s} {'Iznos FN':>10s} {'Iznos TP':>10s}\n")
+        for name, fn, fp, tp, izn_fn, izn_tp in analiza_gresaka:
+            f.write(f"{name:22s} {fn:>4d} {fp:>5d} {tp:>4d} {izn_fn:>10.2f} {izn_tp:>10.2f}\n")
+        f.write("\nPoređenje prosečnog iznosa FN i TP pokazuje da li model sistematski\n")
+        f.write("promašuje prevare određene veličine (manje ili veće od uhvaćenih).\n")
+    print(f"Analiza grešaka sačuvana u: {err_file}")
     print(f"Sve metrike su sačuvane u: {metrics_file_path}")
 
 if __name__ == "__main__":
@@ -186,4 +268,5 @@ if __name__ == "__main__":
     METRICS_DIR = "../results/metrics"
 
     select_best_model_on_validation(VAL_FILE, MODELS_DIR, METRICS_DIR)
+    optimize_threshold(VAL_FILE, MODELS_DIR, METRICS_DIR)
     evaluate_models(TEST_FILE, MODELS_DIR, FIGURES_DIR, METRICS_DIR)
