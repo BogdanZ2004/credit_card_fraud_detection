@@ -1,0 +1,12 @@
+=== ANALIZA GREŠAKA (po iznosu) ===
+FN = propuštene prevare | FP = lažne uzbune | TP = uhvaćene prevare
+
+Model                    FN    FP   TP   Iznos FN   Iznos TP
+DecisionTree             16  1411   55     144.08     172.24
+LogisticRegression       10  1119   61     227.68     155.77
+RandomForest_100         16     7   55     159.23     167.84
+RandomForest_150         15     7   56     169.69     164.88
+XGBoost                  15    13   56     153.60     169.19
+
+Poređenje prosečnog iznosa FN i TP pokazuje da li model sistematski
+promašuje prevare određene veličine (manje ili veće od uhvaćenih).

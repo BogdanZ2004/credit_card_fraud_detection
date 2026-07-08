@@ -1,0 +1,7 @@
+=== EDA SAŽETAK ===
+
+Ukupno transakcija:       283726
+Legitimne (0):            283253
+Prevare (1):              473 (0.167%)
+Nedostajuće vrednosti:    0
+Duplikati (redovi):       2804

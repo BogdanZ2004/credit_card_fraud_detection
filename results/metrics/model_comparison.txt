@@ -1,37 +1,42 @@
 === POREĐENJE MODELA ZA DETEKCIJU PREVARA ===
 
 --- DecisionTree ---
-Preciznost (Precision): 0.0664
-Odziv (Recall):         0.7703  <-- NAJBITNIJE
-F1-skor:                0.1223
-ROC AUC:                0.8977
-AUPRC:                  0.6931
+Preciznost (Precision): 0.0375
+Odziv (Recall):         0.7746  <-- NAJBITNIJE
+F1-skor:                0.0716
+ROC AUC:                0.8673
+AUPRC:                  0.6401
 
 --- LogisticRegression ---
-Preciznost (Precision): 0.0553
-Odziv (Recall):         0.8784  <-- NAJBITNIJE
-F1-skor:                0.1040
-ROC AUC:                0.9627
-AUPRC:                  0.7389
+Preciznost (Precision): 0.0517
+Odziv (Recall):         0.8592  <-- NAJBITNIJE
+F1-skor:                0.0975
+ROC AUC:                0.9632
+AUPRC:                  0.6794
 
 --- RandomForest_100 ---
-Preciznost (Precision): 0.8429
-Odziv (Recall):         0.7973  <-- NAJBITNIJE
-F1-skor:                0.8194
-ROC AUC:                0.9710
-AUPRC:                  0.8339
+Preciznost (Precision): 0.8871
+Odziv (Recall):         0.7746  <-- NAJBITNIJE
+F1-skor:                0.8271
+ROC AUC:                0.9560
+AUPRC:                  0.8189
 
 --- RandomForest_150 ---
-Preciznost (Precision): 0.8551
-Odziv (Recall):         0.7973  <-- NAJBITNIJE
-F1-skor:                0.8252
-ROC AUC:                0.9773
-AUPRC:                  0.8361
+Preciznost (Precision): 0.8889
+Odziv (Recall):         0.7887  <-- NAJBITNIJE
+F1-skor:                0.8358
+ROC AUC:                0.9538
+AUPRC:                  0.8144
 
 --- XGBoost ---
-Preciznost (Precision): 0.8493
-Odziv (Recall):         0.8378  <-- NAJBITNIJE
-F1-skor:                0.8435
-ROC AUC:                0.9694
-AUPRC:                  0.8415
+Preciznost (Precision): 0.8116
+Odziv (Recall):         0.7887  <-- NAJBITNIJE
+F1-skor:                0.8000
+ROC AUC:                0.9656
+AUPRC:                  0.8129
 
+--- Baseline (nasumičan klasifikator) ---
+Preciznost (Precision): 0.0000
+Odziv (Recall):         0.0000
+AUPRC:                  0.0008
+(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)

@@ -1,10 +1,10 @@
 === IZBOR MODELA NA VALIDACIONOM SKUPU (po AUPRC) ===
 Model se bira ovde; finalni rezultat se prijavljuje na test skupu.
 
-RandomForest_100: AUPRC = 0.8682  <-- NAJBOLJI
-RandomForest_150: AUPRC = 0.8681
-XGBoost: AUPRC = 0.8674
-LogisticRegression: AUPRC = 0.7908
-DecisionTree: AUPRC = 0.7556
+XGBoost: AUPRC = 0.8688  <-- NAJBOLJI
+RandomForest_150: AUPRC = 0.8550
+RandomForest_100: AUPRC = 0.8544
+DecisionTree: AUPRC = 0.7354
+LogisticRegression: AUPRC = 0.7301
 
-Izabrani model: RandomForest_100 (AUPRC = 0.8682)
+Izabrani model: XGBoost (AUPRC = 0.8688)

@@ -21,6 +21,7 @@ Svaka transakcija sadrži:
 ## Pristup
 
 ### Priprema podataka (`src/data_preparation.py`)
+- **Uklanjanje tačnih duplikata** (1.081 red, artefakti sa identičnim vrednostima) na sirovim podacima, pre transformacije — sprečava da isti primer završi i u trening i u test skupu.
 - Transformacija `Time` kolone u `Hour` (sat u toku dana) — deterministička transformacija bez učenja parametara.
 - Skaliranje `Amount` kolone vrši se **nakon** podele na skupove kako bi se izbeglo curenje podataka (data leakage).
 
@@ -39,7 +40,10 @@ Svaka transakcija sadrži:
 
 ### Evaluacija (`src/evaluate.py`)
 - Metrike: Preciznost, Odziv, F1, ROC AUC, AUPRC.
-- Matrice konfuzije po modelu i zajednička ROC kriva svih modela.
+- Matrice konfuzije po modelu, zajednička ROC i Precision-Recall kriva, stubičasti grafik poređenja.
+- **Baseline** (nasumičan klasifikator) — dokaz da modeli uče prave obrasce.
+- **Analiza grešaka** (`error_analysis.txt`) — karakteristike propuštenih prevara vs uhvaćenih.
+- **Podešavanje praga po F2** (`threshold_optimization.txt`) — optimalan prag odluke na validaciji (F2 naglašava odziv).
 
 ### Odabir atributa (`src/feature_selection.py`)
 - Exhaustivna analiza: isprobava top-1 do top-30 atributa po važnosti iz Random Forest modela.
@@ -108,15 +112,18 @@ uv run python pipeline.py
 
 | Model | Preciznost | Odziv | F1 | ROC AUC | AUPRC |
 |---|---|---|---|---|---|
-| Logistička regresija | 0.0553 | 0.8784 | 0.1040 | 0.9627 | 0.7389 |
-| Stablo odlučivanja | 0.0664 | 0.7703 | 0.1223 | 0.8977 | 0.6931 |
-| Random Forest (100) | 0.8429 | 0.7973 | 0.8194 | 0.9710 | 0.8339 |
-| Random Forest (150) | 0.8551 | 0.7973 | 0.8252 | 0.9773 | 0.8361 |
-| **XGBoost** | **0.8493** | **0.8378** | **0.8435** | **0.9694** | **0.8415** |
+| Logistička regresija | 0.0517 | 0.8592 | 0.0975 | 0.9632 | 0.6794 |
+| Stablo odlučivanja | 0.0375 | 0.7746 | 0.0716 | 0.8673 | 0.6401 |
+| Random Forest (100) | 0.8871 | 0.7746 | 0.8271 | 0.9560 | 0.8189 |
+| Random Forest (150) | 0.8889 | 0.7887 | 0.8358 | 0.9538 | 0.8144 |
+| **XGBoost** | **0.8116** | **0.7887** | **0.8000** | **0.9656** | **0.8129** |
+| Baseline (nasumičan) | 0.0000 | 0.0000 | — | — | 0.0008 |
 
-**Izbor modela (na validaciji): RandomForest_100** (AUPRC 0.8682). Tri najbolja modela — RandomForest_100, RandomForest_150 i XGBoost — praktično su izjednačena na validaciji (0.8682 / 0.8681 / 0.8674). Na test skupu XGBoost ima najviši AUPRC (0.8415) i najviši Odziv (0.8378).
+**Izbor modela (na validaciji): XGBoost** (AUPRC 0.8688). Tri ansambla su vrlo bliska; na test skupu najviši AUPRC ima RandomForest_100 (0.8189), tik ispred RF_150 (0.8144) i XGBoost-a (0.8129). Svi modeli su **drastično bolji od baseline-a** (0.0008), što dokazuje da uče prave obrasce.
 
-> **Napomena o izboru modela:** Model se bira **isključivo** na validacionom skupu (`results/metrics/validation_selection.txt`); test skup se koristi samo za finalni izveštaj i ne utiče ni na treniranje ni na izbor. Pošto su tri modela gotovo izjednačena, koji je „najbolji" zavisi od skupa (RandomForest na validaciji, XGBoost na testu).
+> **Napomena o izboru modela:** Model se bira **isključivo** na validacionom skupu (`results/metrics/validation_selection.txt`); test skup se koristi samo za finalni izveštaj i ne utiče ni na treniranje ni na izbor. Pošto su tri modela gotovo izjednačena, koji je „najbolji" zavisi od skupa.
+
+> **Napomena o duplikatima:** Uklanjanjem 1.081 tačnog duplikata metrike su blago pale (npr. XGBoost AUPRC 0.842 → 0.813) — potvrda da su duplikati blago naduvavali rezultate (isti primer u trening i test skupu). Novi brojevi su pouzdaniji.
 
 ---
 
