@@ -146,6 +146,8 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         precision = precision_score(y_test, y_pred)
         recall = recall_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
+        # F2 naglašava odziv (isti fokus kao pri izboru praga); ovde na podrazumevanom pragu 0.5
+        f2 = fbeta_score(y_test, y_pred, beta=2, zero_division=0)
 
         pr_precision, pr_recall, _ = precision_recall_curve(y_test, y_proba)
         auprc = auc(pr_recall, pr_precision)
@@ -153,13 +155,14 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         fpr, tpr, _ = roc_curve(y_test, y_proba)
         roc_curves.append((model_name, fpr, tpr, roc_auc))
         pr_curves.append((model_name, pr_recall, pr_precision, auprc))
-        summary.append((model_name, precision, recall, f1, auprc))
+        summary.append((model_name, precision, recall, f1, f2, roc_auc, auprc))
 
         result_text = (
             f"--- {model_name} ---\n"
             f"Preciznost (Precision): {precision:.4f}\n"
             f"Odziv (Recall):         {recall:.4f}  <-- NAJBITNIJE\n"
             f"F1-skor:                {f1:.4f}\n"
+            f"F2-skor:                {f2:.4f}\n"
             f"ROC AUC:                {roc_auc:.4f}\n"
             f"AUPRC:                  {auprc:.4f}\n\n"
         )
@@ -226,7 +229,7 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     x = np.arange(len(names))
     w = 0.25
     plt.figure(figsize=(10, 6))
-    plt.bar(x - w, [s[4] for s in summary], w, label='AUPRC')
+    plt.bar(x - w, [s[6] for s in summary], w, label='AUPRC')
     plt.bar(x,     [s[3] for s in summary], w, label='F1')
     plt.bar(x + w, [s[2] for s in summary], w, label='Odziv')
     plt.xticks(x, names, rotation=20, ha='right')
@@ -258,6 +261,13 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         f.write(f"AUPRC (izmereno):       {b_auprc:.4f}\n")
         f.write(f"AUPRC (teorijski):      {y_test.mean():.4f}  (= stopa prevara u testu; linija na PR krivoj)\n")
         f.write("(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)\n")
+
+    # Zbirna tabela svih metrika po modelu (za dokumentaciju) — test skup, prag 0.5
+    with open(metrics_file_path, 'a', encoding='utf-8') as f:
+        f.write("\n=== ZBIRNA TABELA (sve metrike, test skup, prag 0.5) ===\n")
+        f.write(f"{'Model':22s} {'Prec':>7s} {'Recall':>7s} {'F1':>7s} {'F2':>7s} {'ROC-AUC':>8s} {'AUPRC':>7s}\n")
+        for name, prec, rec, f1v, f2v, roc, ap in summary:
+            f.write(f"{name:22s} {prec:7.4f} {rec:7.4f} {f1v:7.4f} {f2v:7.4f} {roc:8.4f} {ap:7.4f}\n")
 
     # Analiza grešaka: gde model najviše greši (propuštene prevare vs uhvaćene)
     err_file = os.path.join(metrics_dir, 'error_analysis.txt')

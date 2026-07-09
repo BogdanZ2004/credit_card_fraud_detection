@@ -43,7 +43,7 @@ Svaka transakcija sadrži:
 - Hiperparametri se biraju unakrsnom validacijom (5-fold) na trening skupu; test skup se koristi samo jednom, na kraju.
 
 ### Evaluacija (`src/evaluate.py`)
-- Metrike: Preciznost, Odziv, F1, ROC AUC, AUPRC.
+- Metrike (po modelu): Preciznost, Odziv, F1, **F2**, ROC AUC, AUPRC — svaka sačuvana za svaki model, uz zbirnu tabelu na kraju `model_comparison.txt`.
 - Matrice konfuzije po modelu, zajednička ROC i Precision-Recall kriva, stubičasti grafik poređenja.
 - **Baseline** (nasumičan klasifikator) — dokaz da modeli uče prave obrasce.
 - **Analiza grešaka** (`error_analysis.txt`) — karakteristike propuštenih prevara vs uhvaćenih.
