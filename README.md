@@ -20,6 +20,10 @@ Svaka transakcija sadrži:
 
 ## Pristup
 
+### Analiza duplikata (`src/duplicate_analysis.py`)
+- Dijagnostika sirovih podataka **pre uklanjanja**: koliko ima tačnih duplikata (identičnih po svim 30 atributa i klasi) i koliko su obogaćeni prevarama u odnosu na baznu stopu.
+- Ništa ne menja niti briše — samo izveštaj (`duplicate_analysis.txt`) koji opravdava odluku o uklanjanju duplikata.
+
 ### Priprema podataka (`src/data_preparation.py`)
 - **Uklanjanje tačnih duplikata** (1.081 red, artefakti sa identičnim vrednostima) na sirovim podacima, pre transformacije — sprečava da isti primer završi i u trening i u test skupu.
 - Transformacija `Time` kolone u `Hour` (sat u toku dana) — deterministička transformacija bez učenja parametara.
@@ -66,6 +70,7 @@ Svaka transakcija sadrži:
 │   ├── figures/                   # Matrice konfuzije, ROC kriva, EDA grafici
 │   └── metrics/                   # Poređenje na testu, tuning, izbor na validaciji, rang atributa
 ├── src/
+│   ├── duplicate_analysis.py      # Analiza duplikata u sirovim podacima
 │   ├── data_preparation.py        # Priprema i čišćenje podataka
 │   ├── eda_analysis.py            # Eksplorativna analiza (EDA)
 │   ├── train.py                   # Podela, skaliranje, SMOTE, tuning, treniranje
@@ -103,7 +108,7 @@ uv run python -m streamlit run app/app.py
 Za potpuno treniranje od nule potrebno je preuzeti `creditcard.csv` sa [Kaggle-a](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) i smestiti ga u `data/raw/`, zatim pokrenuti:
 
 ```bash
-# Pokretanje celog pipeline-a (priprema → EDA → treniranje → izbor modela/prag → selekcija atributa → evaluacija)
+# Pokretanje celog pipeline-a (analiza duplikata → priprema → EDA → treniranje → izbor modela/prag → selekcija atributa → evaluacija)
 uv run python pipeline.py
 ```
 
