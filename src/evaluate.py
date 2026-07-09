@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+import json
 import joblib
 import matplotlib
 matplotlib.use('Agg')  # crtanje u fajl bez ekrana (bezbedno na serveru)
@@ -91,7 +92,14 @@ def optimize_threshold(val_data_path, models_dir, metrics_dir, beta=2):
             najbolji_po_modelu[name] = best_t
             f.write(f"{name:22s} {best_t:9.2f} {f2_default:9.4f} {best_f2:9.4f}\n")
 
+    # Mašinski čitljiv zapis pragova — app.py ga učitava da postavi podrazumevani
+    # (F2-optimalni) prag za izabrani model, uz zadržavanje ručnog klizača.
+    thresholds_json = os.path.join(models_dir, 'best_thresholds.json')
+    with open(thresholds_json, 'w', encoding='utf-8') as jf:
+        json.dump(najbolji_po_modelu, jf, indent=2)
+
     print(f"   Sačuvano u: {results_file}")
+    print(f"   Pragovi (JSON za app): {thresholds_json}")
     return najbolji_po_modelu
 
 

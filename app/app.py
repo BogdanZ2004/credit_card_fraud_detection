@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import json
 import os
 
 st.set_page_config(page_title="Fraud Detection", layout="centered")
@@ -9,10 +10,21 @@ st.set_page_config(page_title="Fraud Detection", layout="centered")
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 TEST_DATA_PATH = os.path.join(BASE_DIR, "data", "processed", "test_set.csv")
+THRESHOLDS_PATH = os.path.join(MODELS_DIR, "best_thresholds.json")
 
 @st.cache_data
 def load_data():
     return pd.read_csv(TEST_DATA_PATH)
+
+@st.cache_data
+def load_thresholds():
+    # F2-optimalni pragovi po modelu (generiše evaluate.optimize_threshold).
+    # Ako fajl ne postoji (pipeline još nije pokrenut), pada nazad na prazno -> prag 0.50.
+    try:
+        with open(THRESHOLDS_PATH, encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
 
 @st.cache_resource
 def load_scaler():
@@ -44,7 +56,20 @@ except Exception as e:
 # Klizač kojim korisnik podešava granicu između legitimne i prevarantske transakcije
 st.markdown("### Podešavanje osetljivosti sistema (Threshold)")
 st.write("Ako smanjiš prag, model će biti 'paranoičniji' i lakše će blokirati kartice.")
-threshold = st.slider("Prag za proglašavanje prevare:", min_value=0.01, max_value=0.99, value=0.50, step=0.01)
+
+# Svaki model ima svoj F2-optimalni prag (izabran na validaciji). Kada se promeni model,
+# klizač se automatski postavlja na taj prag; korisnik i dalje može ručno da ga menja.
+thresholds = load_thresholds()
+default_threshold = float(thresholds.get(selected_model_name, 0.50))
+if st.session_state.get('threshold_model') != selected_model_name:
+    st.session_state['threshold_slider'] = default_threshold
+    st.session_state['threshold_model'] = selected_model_name
+
+threshold = st.slider(
+    "Prag za proglašavanje prevare:",
+    min_value=0.01, max_value=0.99, step=0.01, key='threshold_slider',
+)
+st.caption(f"Preporučeni (F2-optimalni) prag za model **{selected_model_name}**: {default_threshold:.2f}")
 st.markdown("---")
 
 st.subheader("1. Pristigla je nova transakcija")

@@ -47,7 +47,7 @@ Svaka transakcija sadrži:
 - Matrice konfuzije po modelu, zajednička ROC i Precision-Recall kriva, stubičasti grafik poređenja.
 - **Baseline** (nasumičan klasifikator) — dokaz da modeli uče prave obrasce.
 - **Analiza grešaka** (`error_analysis.txt`) — karakteristike propuštenih prevara vs uhvaćenih.
-- **Podešavanje praga po F2** (`threshold_optimization.txt`) — optimalan prag odluke na validaciji (F2 naglašava odziv).
+- **Podešavanje praga po F2** (`threshold_optimization.txt`) — optimalan prag odluke na validaciji (F2 naglašava odziv). Pragovi se čuvaju i mašinski čitljivo u `models/best_thresholds.json` odakle ih Streamlit aplikacija učitava kao podrazumevani prag po modelu.
 
 ### Odabir atributa (`src/feature_selection.py`)
 - Atributi se rangiraju po važnosti iz već istreniranog Random Forest modela (treniran isključivo na trening skupu).
