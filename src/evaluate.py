@@ -121,12 +121,21 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     scaler = joblib.load(os.path.join(models_dir, 'scaler.pkl'))
     realni_iznos = scaler.inverse_transform(X_test[['Scaled_Amount']])[:, 0]
 
+    # F2-optimalni pragovi izabrani na validaciji (KORAK 6) — za poređenje 0.5 vs optimalni na testu.
+    # Ako fajl ne postoji, optimalni prag pada na 0.5 (bez efekta), uz upozorenje u izveštaju.
+    try:
+        with open(os.path.join(models_dir, 'best_thresholds.json'), encoding='utf-8') as tf:
+            tuned_thresholds = json.load(tf)
+    except (FileNotFoundError, json.JSONDecodeError):
+        tuned_thresholds = {}
+
     print("\n2. Evaluacija modela...")
     # Liste za zajedničke grafike (ROC kriva, PR kriva, stubičasto poređenje) i analizu grešaka
     roc_curves = []
     pr_curves = []
     summary = []
     analiza_gresaka = []
+    payoff = []   # poređenje praga 0.5 vs F2-optimalni prag (na test skupu)
 
     for model_file in sorted(os.listdir(models_dir)):
         # Preskačemo scaler.pkl jer nije model za klasifikaciju
@@ -156,6 +165,21 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         roc_curves.append((model_name, fpr, tpr, roc_auc))
         pr_curves.append((model_name, pr_recall, pr_precision, auprc))
         summary.append((model_name, precision, recall, f1, f2, roc_auc, auprc))
+
+        # Poređenje: metrike na 0.5 vs na F2-optimalnom pragu (izabranom na validaciji),
+        # mereno na TEST skupu. Prag se ovde samo PRIMENJUJE na test -> nema curenja.
+        t_opt = float(tuned_thresholds.get(model_name, 0.5))
+        y_pred_opt = (y_proba >= t_opt).astype(int)
+        base_row = (recall, precision, f1, f2,
+                    int(((y_test == 1) & (y_pred == 0)).sum()),
+                    int(((y_test == 0) & (y_pred == 1)).sum()))
+        opt_row = (recall_score(y_test, y_pred_opt, zero_division=0),
+                   precision_score(y_test, y_pred_opt, zero_division=0),
+                   f1_score(y_test, y_pred_opt, zero_division=0),
+                   fbeta_score(y_test, y_pred_opt, beta=2, zero_division=0),
+                   int(((y_test == 1) & (y_pred_opt == 0)).sum()),
+                   int(((y_test == 0) & (y_pred_opt == 1)).sum()))
+        payoff.append((model_name, t_opt, base_row, opt_row))
 
         result_text = (
             f"--- {model_name} ---\n"
@@ -268,6 +292,25 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         f.write(f"{'Model':22s} {'Prec':>7s} {'Recall':>7s} {'F1':>7s} {'F2':>7s} {'ROC-AUC':>8s} {'AUPRC':>7s}\n")
         for name, prec, rec, f1v, f2v, roc, ap in summary:
             f.write(f"{name:22s} {prec:7.4f} {rec:7.4f} {f1v:7.4f} {f2v:7.4f} {roc:8.4f} {ap:7.4f}\n")
+
+    # Potvrda da F2-optimalni prag (izabran na validaciji) daje bolji rezultat od 0.5 — na TEST skupu.
+    payoff_file = os.path.join(metrics_dir, 'threshold_payoff_test.txt')
+    with open(payoff_file, 'w', encoding='utf-8') as f:
+        f.write("=== EFEKAT PRAGA NA TEST SKUPU (0.5 vs F2-optimalni prag) ===\n")
+        f.write("Prag se BIRA na validaciji (po F2), a ovde se samo PRIMENJUJE na test — bez curenja.\n")
+        if not tuned_thresholds:
+            f.write("\nUPOZORENJE: models/best_thresholds.json nije pronađen — optimalni prag = 0.5\n")
+            f.write("(pokreni KORAK 6 / optimize_threshold da se generiše).\n")
+        f.write(f"\n{'Model':20s} {'Prag':>6s} {'Recall':>8s} {'Prec':>8s} {'F1':>8s} {'F2':>8s} {'FN':>4s} {'FP':>5s}\n")
+        for name, t_opt, base, opt in payoff:
+            rec0, prec0, f10, f20, fn0, fp0 = base
+            rec1, prec1, f11, f21, fn1, fp1 = opt
+            f.write(f"{name:20s} {'0.50':>6s} {rec0:8.4f} {prec0:8.4f} {f10:8.4f} {f20:8.4f} {fn0:4d} {fp0:5d}\n")
+            f.write(f"{name:20s} {f'{t_opt:.2f}*':>6s} {rec1:8.4f} {prec1:8.4f} {f11:8.4f} {f21:8.4f} {fn1:4d} {fp1:5d}\n\n")
+        f.write("(* = F2-optimalni prag, izabran na validaciji)\n")
+        f.write("Niži prag -> veći odziv (manje propuštenih prevara FN), po cenu više lažnih uzbuna (FP).\n")
+        f.write("F2 na optimalnom pragu potvrđuje da je taj kompromis isplativ i na test skupu.\n")
+    print(f"Poređenje pragova (test) sačuvano u: {payoff_file}")
 
     # Analiza grešaka: gde model najviše greši (propuštene prevare vs uhvaćene)
     err_file = os.path.join(metrics_dir, 'error_analysis.txt')

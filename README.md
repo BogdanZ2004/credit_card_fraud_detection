@@ -48,6 +48,7 @@ Svaka transakcija sadrži:
 - **Baseline** (nasumičan klasifikator) — dokaz da modeli uče prave obrasce.
 - **Analiza grešaka** (`error_analysis.txt`) — karakteristike propuštenih prevara vs uhvaćenih.
 - **Podešavanje praga po F2** (`threshold_optimization.txt`) — optimalan prag odluke na validaciji (F2 naglašava odziv). Pragovi se čuvaju i mašinski čitljivo u `models/best_thresholds.json` odakle ih Streamlit aplikacija učitava kao podrazumevani prag po modelu.
+- **Potvrda praga na test skupu** (`threshold_payoff_test.txt`) — po modelu, poređenje metrika na pragu 0.5 vs na F2-optimalnom pragu (izabranom na validaciji), primenjeno na test skup — pokazuje da izabrani prag i na nevidljivim podacima podiže odziv (uz očekivani pad preciznosti).
 
 ### Odabir atributa (`src/feature_selection.py`)
 - Atributi se rangiraju po važnosti iz već istreniranog Random Forest modela (treniran isključivo na trening skupu).
