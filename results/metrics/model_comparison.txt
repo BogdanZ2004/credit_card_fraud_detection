@@ -38,5 +38,6 @@ AUPRC:                  0.8109
 --- Baseline (nasumičan klasifikator) ---
 Preciznost (Precision): 0.0000
 Odziv (Recall):         0.0000
-AUPRC:                  0.0008
+AUPRC (izmereno):       0.0008
+AUPRC (teorijski):      0.0017  (= stopa prevara u testu; linija na PR krivoj)
 (Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)

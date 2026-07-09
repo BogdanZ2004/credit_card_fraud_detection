@@ -31,6 +31,14 @@ def run_eda(input_path, figures_dir, metrics_dir):
         f.write(f"Prevare (1):              {broj_prevara} ({broj_prevara / ukupno * 100:.3f}%)\n")
         f.write(f"Nedostajuće vrednosti:    {nedostajuce}\n")
         f.write(f"Duplikati (redovi):       {duplikati}\n")
+        # Duplikati ovde NISU pravi duplikati: nastaju tek posle Time->Hour, kada se
+        # različite transakcije poklope po satu (0-23). Pravi duplikati (identičan
+        # pun Time) su već uklonjeni u data_preparation.py, pa se ovi ne brišu.
+        f.write("\nNapomena: ovi 'duplikati' nastaju tek posle transformacije Time->Hour —\n")
+        f.write("različite transakcije postanu identične kada se vreme zaokruži na sat (0-23),\n")
+        f.write("pa NISU pravi duplikati i namerno se NE uklanjaju. Pravi duplikati\n")
+        f.write("(identičan pun Time i sve vrednosti, 1.081 red) uklonjeni su ranije,\n")
+        f.write("u data_preparation.py, na sirovim podacima pre ove transformacije.\n")
     print(f"   Nedostajuće vrednosti: {nedostajuce} | Duplikati: {duplikati}")
     print(f"   Sažetak sačuvan u: {summary_path}")
 

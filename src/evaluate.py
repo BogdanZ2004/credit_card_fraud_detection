@@ -233,6 +233,9 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
 
     # Baseline: nasumičan klasifikator (predviđa po raspodeli klasa) — dokaz da modeli
     # uče prave obrasce, a ne da samo eksploatišu neuravnoteženost.
+    # DummyClassifier ignoriše atribute — fit uči samo raspodelu klasa, koja je zbog
+    # stratifikovane podele ista u train/val/test, pa je fit ovde ekvivalentan fitu
+    # na treningu (nema curenja informacija).
     dummy = DummyClassifier(strategy='stratified', random_state=42)
     dummy.fit(X_test, y_test)
     yb = dummy.predict(X_test)
@@ -244,7 +247,8 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         f.write("--- Baseline (nasumičan klasifikator) ---\n")
         f.write(f"Preciznost (Precision): {b_prec:.4f}\n")
         f.write(f"Odziv (Recall):         {b_rec:.4f}\n")
-        f.write(f"AUPRC:                  {b_auprc:.4f}\n")
+        f.write(f"AUPRC (izmereno):       {b_auprc:.4f}\n")
+        f.write(f"AUPRC (teorijski):      {y_test.mean():.4f}  (= stopa prevara u testu; linija na PR krivoj)\n")
         f.write("(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)\n")
 
     # Analiza grešaka: gde model najviše greši (propuštene prevare vs uhvaćene)

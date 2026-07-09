@@ -125,6 +125,8 @@ uv run python pipeline.py
 
 > **Napomena o duplikatima:** Uklanjanjem 1.081 tačnog duplikata metrike su blago pale (npr. XGBoost AUPRC 0.842 → 0.811) — potvrda da su duplikati blago naduvavali rezultate (isti primer u trening i test skupu). Novi brojevi su pouzdaniji.
 
+> **Napomena o baseline-u:** 0.0008 je izmerena vrednost `DummyClassifier(strategy='stratified')`; teorijski AUPRC nasumičnog klasifikatora jednak je stopi prevara u test skupu (≈ 0.0017 — linija na PR krivoj). Isti red veličine — modeli su i dalje ~500–1000× iznad.
+
 ---
 
 ## Optimalni hiperparametri (RandomizedSearchCV)
