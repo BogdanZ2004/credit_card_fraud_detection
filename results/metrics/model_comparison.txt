@@ -2,35 +2,35 @@
 
 --- DecisionTree ---
 Preciznost (Precision): 0.0375
-Odziv (Recall):         0.7746  <-- NAJBITNIJE
+Odziv (Recall):         0.7746
 F1-skor:                0.0716
 ROC AUC:                0.8673
 AUPRC:                  0.6401
 
 --- LogisticRegression ---
 Preciznost (Precision): 0.0516
-Odziv (Recall):         0.8592  <-- NAJBITNIJE
+Odziv (Recall):         0.8592
 F1-skor:                0.0974
 ROC AUC:                0.9630
 AUPRC:                  0.6796
 
 --- RandomForest_100 ---
 Preciznost (Precision): 0.9032
-Odziv (Recall):         0.7887  <-- NAJBITNIJE
+Odziv (Recall):         0.7887
 F1-skor:                0.8421
 ROC AUC:                0.9745
 AUPRC:                  0.8143
 
 --- RandomForest_150 ---
 Preciznost (Precision): 0.8889
-Odziv (Recall):         0.7887  <-- NAJBITNIJE
+Odziv (Recall):         0.7887
 F1-skor:                0.8358
 ROC AUC:                0.9538
 AUPRC:                  0.8144
 
 --- XGBoost ---
 Preciznost (Precision): 0.7671
-Odziv (Recall):         0.7887  <-- NAJBITNIJE
+Odziv (Recall):         0.7887
 F1-skor:                0.7778
 ROC AUC:                0.9594
 AUPRC:                  0.8109
@@ -40,4 +40,3 @@ Preciznost (Precision): 0.0000
 Odziv (Recall):         0.0000
 AUPRC (izmereno):       0.0008
 AUPRC (teorijski):      0.0017  (= stopa prevara u testu; linija na PR krivoj)
-(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)
