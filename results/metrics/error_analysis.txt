@@ -1,8 +1,0 @@
-		=== ANALIZA GREŠAKA (po iznosu) ===
-Model               	FN	FP	TP	Avg_FN_Amt	Avg_TP_Amt
-
-RandomForest_100.p  	15	6	56	41.17		85.95
-LogisticRegression  	10	1121	61	41.84		82.17
-DecisionTree.pkl    	16	1411	55	48.78		84.55
-RandomForest_150.p  	15	7	56	48.31		84.04
-XGBoost.pkl         	15	17	56	38.99		86.53

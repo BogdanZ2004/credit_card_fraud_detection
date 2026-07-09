@@ -46,10 +46,11 @@ Svaka transakcija sadrži:
 - **Podešavanje praga po F2** (`threshold_optimization.txt`) — optimalan prag odluke na validaciji (F2 naglašava odziv).
 
 ### Odabir atributa (`src/feature_selection.py`)
-- Exhaustivna analiza: isprobava top-1 do top-30 atributa po važnosti iz Random Forest modela.
-- Evaluacija na validacionom skupu radi ispravnog poređenja.
-- Rezultat je rang lista koja pokazuje koliko atributa je dovoljno za maksimalan odziv — koristi se da se proveri da li su svi atributi neophodni ili se neki mogu ukloniti bez gubitka performansi.
-- Nije deo glavnog pipeline-a — pokreće se zasebno: `uv run python src/feature_selection.py`
+- Atributi se rangiraju po važnosti iz već istreniranog Random Forest modela (treniran isključivo na trening skupu).
+- Za svaki top-k podskup meri se **AUPRC** kroz **5-fold stratifikovanu unakrsnu validaciju na trening skupu** (SMOTE unutar svakog folda) — test skup se **ne dodiruje**.
+- Broj atributa se bira **pravilom 1 standardne greške (1-SE)**: najmanji k čiji je CV AUPRC unutar jedne standardne greške od najboljeg — najparsimoničniji model koji je statistički nerazlučiv od najboljeg.
+- Rezultat: rang lista + grafik `feature_selection_auprc_vs_k.png` (AUPRC vs broj atributa sa pragom 1-SE).
+- Deo je pipeline-a kao **KORAK 6** (posle treniranja, pre finalne evaluacije na testu). Na ovoj grani (svih 30 atributa) služi kao **informativna analiza** — finalni modeli i dalje koriste sve atribute. Predlog broja atributa je osnova za posebnu granu koja modele trenira na izabranom podskupu i tek onda jednom ocenjuje na test skupu.
 
 ---
 
@@ -102,7 +103,7 @@ uv run python -m streamlit run app/app.py
 Za potpuno treniranje od nule potrebno je preuzeti `creditcard.csv` sa [Kaggle-a](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) i smestiti ga u `data/raw/`, zatim pokrenuti:
 
 ```bash
-# Pokretanje celog pipeline-a (priprema → EDA → treniranje → evaluacija)
+# Pokretanje celog pipeline-a (priprema → EDA → treniranje → izbor modela/prag → selekcija atributa → evaluacija)
 uv run python pipeline.py
 ```
 
