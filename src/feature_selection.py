@@ -7,6 +7,7 @@ matplotlib.use('Agg')  # crtanje u fajl bez ekrana (bezbedno na serveru)
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import RobustScaler
+from sklearn.compose import ColumnTransformer
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
 from sklearn.ensemble import RandomForestClassifier
@@ -17,7 +18,7 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     """Selekcija broja atributa po AUPRC uz unakrsnu validaciju i pravilo 1-SE.
 
     Rangira atribute po važnosti iz već istreniranog RandomForest-a, zatim za svaki
-    top-k meri AUPRC preko StratifiedKFold CV (SMOTE unutar svakog folda). Broj atributa
+    top-k meri AUPRC preko StratifiedKFold CV (skaliranje i SMOTE unutar svakog folda). Broj atributa
     bira po pravilu 1 standardne greške: najmanji k čiji CV AUPRC nije lošiji od
     (najbolji AUPRC − 1 SE). Sve se radi na TRENING skupu; test se ne dodiruje.
     """
@@ -35,12 +36,10 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         X_temp, y_temp, test_size=0.1765, random_state=42, stratify=y_temp
     )
 
-    # Skaliranje Amount kolone — fit SAMO na trening skupu (bez curenja podataka).
-    # Za sweep je dovoljan trening skup, pa val/test ovde ni ne koristimo.
-    scaler = RobustScaler()
+    # X_train ostaje NESKALIRAN (zadržava sirovi 'Amount'). Skaliranje se radi UNUTAR
+    # svakog CV folda (ColumnTransformer u pipeline-u), pa statistika skaliranja ne curi
+    # iz validacionog dela folda. Val/test se ovde ni ne koriste.
     X_train = X_train.copy()
-    X_train['Scaled_Amount'] = scaler.fit_transform(X_train[['Amount']])
-    X_train = X_train.drop('Amount', axis=1)
 
     try:
         original_rf = joblib.load(original_model_path)
@@ -49,10 +48,12 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         return
 
     # Rang atributa po važnosti iz istreniranog RF-a (treniran samo na treningu).
-    # Redosled kolona u X_train poklapa se sa redosledom atributa modela.
+    # Imena uzimamo direktno iz modela (feature_names_in_) jer X_train ovde nije skaliran,
+    # pa nazivi/redosled kolona ne moraju da se poklope. 'Scaled_Amount' iz modela odgovara
+    # sirovoj koloni 'Amount' u X_train-u (skalira se tek unutar folda).
     importances = original_rf.feature_importances_
     feature_df = pd.DataFrame({
-        'Atribut': X_train.columns,
+        'Atribut': list(original_rf.feature_names_in_),
         'Značaj': importances
     }).sort_values(by='Značaj', ascending=False).reset_index(drop=True)
 
@@ -64,20 +65,26 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
     print(f"\n2. Sweep top-1 .. top-{n_features} atributa "
-          f"({n_splits}-fold CV, AUPRC, SMOTE unutar folda).")
+          f"({n_splits}-fold CV, AUPRC, skaler + SMOTE unutar folda).")
     print(f"   UPOZORENJE: trenira se {n_splits} × {n_features} = {n_splits * n_features} "
           f"modela — potrajaće!\n")
 
     rezultati = []
     for k in range(1, n_features + 1):
         top_k = ranked_features[:k]
-        X_k = X_train[top_k]
+        # 'Scaled_Amount' iz ranga predstavlja sirovi 'Amount' u X_train-u
+        raw_cols = ['Amount' if c == 'Scaled_Amount' else c for c in top_k]
+        X_k = X_train[raw_cols]
 
-        # RF n_jobs=1 jer cross_val_score već paralelizuje foldove (n_jobs=-1)
-        pipe = ImbPipeline([
-            ('smote', SMOTE(random_state=42)),
-            ('model', RandomForestClassifier(n_estimators=n_estimators, random_state=42, n_jobs=1)),
-        ])
+        # Skaliranje 'Amount' se radi UNUTAR folda (fit po foldu) ako je u podskupu; ostali
+        # atributi prolaze netaknuti. RF n_jobs=1 jer cross_val_score paralelizuje foldove.
+        steps = []
+        if 'Amount' in raw_cols:
+            steps.append(('scaler', ColumnTransformer(
+                [('amount', RobustScaler(), ['Amount'])], remainder='passthrough')))
+        steps.append(('smote', SMOTE(random_state=42)))
+        steps.append(('model', RandomForestClassifier(n_estimators=n_estimators, random_state=42, n_jobs=1)))
+        pipe = ImbPipeline(steps)
         scores = cross_val_score(pipe, X_k, y_train, cv=cv, scoring='average_precision', n_jobs=-1)
 
         mean = float(scores.mean())
