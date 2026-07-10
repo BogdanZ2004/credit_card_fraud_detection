@@ -120,18 +120,20 @@ uv run python pipeline.py
 
 | Model | Preciznost | Odziv | F1 | ROC AUC | AUPRC |
 |---|---|---|---|---|---|
-| Logistička regresija | 0.0516 | 0.8592 | 0.0974 | 0.9630 | 0.6796 |
-| Stablo odlučivanja | 0.0375 | 0.7746 | 0.0716 | 0.8673 | 0.6401 |
-| **Random Forest (100)** | **0.9032** | **0.7887** | **0.8421** | **0.9745** | **0.8143** |
-| Random Forest (150) | 0.8889 | 0.7887 | 0.8358 | 0.9538 | 0.8144 |
-| XGBoost | 0.7671 | 0.7887 | 0.7778 | 0.9594 | 0.8109 |
+| Logistička regresija | 0.0512 | 0.8592 | 0.0967 | 0.9630 | 0.6231 |
+| Stablo odlučivanja | 0.0605 | 0.7887 | 0.1124 | 0.8912 | 0.6054 |
+| Random Forest (100) | 0.8710 | 0.7606 | 0.8120 | 0.9635 | 0.8115 |
+| **Random Forest (150)** | **0.8710** | **0.7606** | **0.8120** | **0.9684** | **0.8115** |
+| XGBoost | 0.8169 | 0.8169 | 0.8169 | 0.9791 | 0.8141 |
 | Baseline (nasumičan) | 0.0000 | 0.0000 | — | — | 0.0008 |
 
-**Izbor modela (na validaciji): RandomForest_100** (AUPRC 0.8560). Tri ansambla su praktično izjednačena — na test skupu RF-150 (0.8144) i RF-100 (0.8143) su gotovo identični, XGBoost tik iza (0.8109). Svi modeli su **drastično bolji od baseline-a** (0.0008), što dokazuje da uče prave obrasce.
+**Izbor modela (na validaciji): RandomForest_150** (AUPRC 0.8564). Tri ansambla su i ovde praktično izjednačena — na test skupu je XGBoost blago najbolji (AUPRC 0.8141), dok su RF-100 i RF-150 na 0.8115. Svi modeli su **drastično bolji od baseline-a** (0.0008), što dokazuje da uče prave obrasce.
+
+> **Poređenje sa `main` (30 atributa):** na jakim ansamblima 18 atributa daje praktično isti AUPRC (RF ~0.8115 vs ~0.8143 na main, XGBoost čak bolji: 0.8141 vs 0.8109) — smanjenje broja atributa za 40% bez značajnog gubitka. Detaljno poređenje: `poredjenje_rezultata/uporedi.py`.
 
 > **Napomena o izboru modela:** Model se bira **isključivo** na validacionom skupu (`results/metrics/validation_selection.txt`); test skup se koristi samo za finalni izveštaj i ne utiče ni na treniranje ni na izbor. Pošto su tri modela gotovo izjednačena, koji je „najbolji" zavisi od skupa.
 
-> **Napomena o duplikatima:** Uklanjanjem 1.081 tačnog duplikata metrike su blago pale (npr. XGBoost AUPRC 0.842 → 0.811) — potvrda da su duplikati blago naduvavali rezultate (isti primer u trening i test skupu). Novi brojevi su pouzdaniji.
+> **Napomena o duplikatima:** Uklanja se 1.081 tačan duplikat pre podele kako isti primer ne bi završio i u trening i u test skupu (curenje). Rezultati su time pouzdaniji, iako blago niži nego sa zadržanim duplikatima.
 
 > **Napomena o baseline-u:** 0.0008 je izmerena vrednost `DummyClassifier(strategy='stratified')`; teorijski AUPRC nasumičnog klasifikatora jednak je stopi prevara u test skupu (≈ 0.0017 — linija na PR krivoj). Isti red veličine — modeli su i dalje ~500–1000× iznad.
 
@@ -141,11 +143,11 @@ uv run python pipeline.py
 
 | Model | Parametri | AUPRC (CV) |
 |---|---|---|
-| Logistička regresija | `C=100` | 0.7368 |
-| Stablo odlučivanja | `max_depth=10, min_samples_leaf=8, criterion=entropy` | 0.5870 |
-| Random Forest (100) | `max_features=log2, max_depth=None` | 0.8379 |
-| Random Forest (150) | `max_features=sqrt, max_depth=None` | 0.8383 |
-| XGBoost | `learning_rate=0.3, max_depth=7, subsample=0.8, colsample_bytree=1.0` | 0.8433 |
+| Logistička regresija | `C=1` | 0.7089 |
+| Stablo odlučivanja | `max_depth=10, min_samples_leaf=4, criterion=entropy` | 0.6329 |
+| Random Forest (100) | `max_features=sqrt, max_depth=None` | 0.8268 |
+| Random Forest (150) | `max_features=sqrt, max_depth=None` | 0.8278 |
+| XGBoost | `learning_rate=0.3, max_depth=7, subsample=0.7, colsample_bytree=0.8` | 0.8380 |
 
 ---
 
