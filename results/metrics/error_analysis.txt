@@ -7,6 +7,3 @@ LogisticRegression       10  1121   61     227.68     155.77
 RandomForest_100         15     6   56     274.55     136.79
 RandomForest_150         16     6   55     272.39     134.92
 XGBoost                  15    17   56     152.64     169.45
-
-Poređenje prosečnog iznosa FN i TP pokazuje da li model sistematski
-promašuje prevare određene veličine (manje ili veće od uhvaćenih).

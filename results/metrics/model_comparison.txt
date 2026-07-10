@@ -2,7 +2,7 @@
 
 --- DecisionTree ---
 Preciznost (Precision): 0.0375
-Odziv (Recall):         0.7746  <-- NAJBITNIJE
+Odziv (Recall):         0.7746 
 F1-skor:                0.0716
 F2-skor:                0.1571
 ROC AUC:                0.8673
@@ -10,7 +10,7 @@ AUPRC:                  0.6401
 
 --- LogisticRegression ---
 Preciznost (Precision): 0.0516
-Odziv (Recall):         0.8592  <-- NAJBITNIJE
+Odziv (Recall):         0.8592 
 F1-skor:                0.0974
 F2-skor:                0.2080
 ROC AUC:                0.9630
@@ -18,7 +18,7 @@ AUPRC:                  0.6796
 
 --- RandomForest_100 ---
 Preciznost (Precision): 0.9032
-Odziv (Recall):         0.7887  <-- NAJBITNIJE
+Odziv (Recall):         0.7887
 F1-skor:                0.8421
 F2-skor:                0.8092
 ROC AUC:                0.9745
@@ -26,7 +26,7 @@ AUPRC:                  0.8143
 
 --- RandomForest_150 ---
 Preciznost (Precision): 0.9016
-Odziv (Recall):         0.7746  <-- NAJBITNIJE
+Odziv (Recall):         0.7746
 F1-skor:                0.8333
 F2-skor:                0.7971
 ROC AUC:                0.9723
@@ -34,7 +34,7 @@ AUPRC:                  0.8153
 
 --- XGBoost ---
 Preciznost (Precision): 0.7671
-Odziv (Recall):         0.7887  <-- NAJBITNIJE
+Odziv (Recall):         0.7887
 F1-skor:                0.7778
 F2-skor:                0.7843
 ROC AUC:                0.9594
@@ -45,7 +45,6 @@ Preciznost (Precision): 0.0000
 Odziv (Recall):         0.0000
 AUPRC (izmereno):       0.0008
 AUPRC (teorijski):      0.0017  (= stopa prevara u testu; linija na PR krivoj)
-(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)
 
 === ZBIRNA TABELA (sve metrike, test skup, prag 0.5) ===
 Model                     Prec  Recall      F1      F2  ROC-AUC   AUPRC

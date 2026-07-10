@@ -18,8 +18,7 @@ def load_data():
 
 @st.cache_data
 def load_thresholds():
-    # F2-optimalni pragovi po modelu (generiše evaluate.optimize_threshold).
-    # Ako fajl ne postoji (pipeline još nije pokrenut), pada nazad na prazno -> prag 0.50.
+    # F2-optimalni pragovi po modelu; ako fajl ne postoji, prazno -> prag 0.50
     try:
         with open(THRESHOLDS_PATH, encoding='utf-8') as f:
             return json.load(f)
@@ -57,8 +56,7 @@ except Exception as e:
 st.markdown("### Podešavanje osetljivosti sistema (Threshold)")
 st.write("Ako smanjiš prag, model će biti 'paranoičniji' i lakše će blokirati kartice.")
 
-# Svaki model ima svoj F2-optimalni prag (izabran na validaciji). Kada se promeni model,
-# klizač se automatski postavlja na taj prag; korisnik i dalje može ručno da ga menja.
+# Kada se promeni model, klizač se postavlja na njegov F2-optimalni prag (i dalje ručno promenljiv)
 thresholds = load_thresholds()
 default_threshold = float(thresholds.get(selected_model_name, 0.50))
 if st.session_state.get('threshold_model') != selected_model_name:

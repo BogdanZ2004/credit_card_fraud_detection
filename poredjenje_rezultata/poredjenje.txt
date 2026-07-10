@@ -1,5 +1,4 @@
 === POREĐENJE GRANA: main (30 atr.) vs 18_atributa (18 atr.) — test skup, prag 0.5 ===
-Δ = 18_atributa − main  (pozitivno => 18 atributa bolje). Veće je bolje za sve metrike.
 
 --- DecisionTree ---
   Prec     main=0.0375  18=0.0605   Δ=+0.0230   -> 18_atributa
@@ -49,7 +48,7 @@
   ROC-AUC  main: 2   18_atributa: 2   nereseno: 1
   AUPRC    main: 4   18_atributa: 1   nereseno: 0
 
-=== FOKUS: AUPRC (primarna metrika) po modelu ===
+=== AUPRC (primarna metrika) po modelu ===
   DecisionTree         main=0.6401  18=0.6054   Δ=-0.0347   -> main
   LogisticRegression   main=0.6796  18=0.6231   Δ=-0.0565   -> main
   RandomForest_100     main=0.8143  18=0.8115   Δ=-0.0028   -> main
@@ -59,4 +58,4 @@
 === UKUPNO (5 modela × 6 metrika = 30 poređenja) ===
   main bolji:        17
   18_atributa bolji: 11
-  nereseno:          2
+  tie:          2

@@ -22,13 +22,7 @@ RF_MODEL    = os.path.join(MODELS_DIR, 'RandomForest_100.pkl')
 FIGURES_DIR = os.path.join(BASE_DIR, 'results', 'figures')
 METRICS_DIR = os.path.join(BASE_DIR, 'results', 'metrics')
 
-# Redosled koraka je namerno takav da se izbegne curenje podataka (data leakage):
-#   - analiza duplikata je čista dijagnostika sirovih podataka (ništa se ne menja),
-#   - podela na train/val/test se radi u train.py; skaliranje i SMOTE se fituju
-#     ISKLJUČIVO na trening skupu (koraci unutar train.py),
-#   - izbor modela i podešavanje praga gledaju SAMO validaciju, a selekcija atributa
-#     radi unakrsnu validaciju na trening skupu — nijedan korak ne dira test,
-#   - test skup se dodiruje TEK na kraju (KORAK 8), samo za finalni izveštaj.
+# Redosled koraka je namerno takav da se izbegne curenje podataka — test se dira tek na kraju
 
 if __name__ == "__main__":
     print("=" * 60)

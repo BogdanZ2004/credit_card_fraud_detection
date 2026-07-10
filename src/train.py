@@ -108,15 +108,12 @@ def apply_smote(X_train, y_train, random_state=42):
 
 
 def tune_hyperparameters(X_train, y_train, metrics_dir):
-    # Skaliranje I SMOTE su UNUTAR pipeline-a svakog folda kako ne bi curili u validacioni
-    # deo folda. X_train ovde stiže NESKALIRAN (sa sirovim 'Amount'); skaler se fita
-    # posebno na trening deo svakog folda.
+    # Skaler i SMOTE su unutar pipeline-a svakog folda (fit po foldu) da ne cure u validacioni deo
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     base_models = get_base_models()
     best_params_all = {}
 
-    # RobustScaler se primenjuje SAMO na 'Amount'; ostali atributi (Hour, V1-V28) prolaze
-    # netaknuti. Fituje se iznova u svakom foldu -> nema curenja statistike skaliranja.
+    # RobustScaler samo na 'Amount' (ostatak prolazi netaknut), fit iznova u svakom foldu
     preprocessor = ColumnTransformer(
         transformers=[('amount', RobustScaler(), ['Amount'])],
         remainder='passthrough',
@@ -133,8 +130,7 @@ def tune_hyperparameters(X_train, y_train, metrics_dir):
         print(f"   -> Podešavam {name}...")
         space = SEARCH_SPACES[name]
 
-        # Pipeline: skaliranje -> SMOTE -> model, sve unutar svakog folda (redosled je bitan:
-        # prvo skaliranje, pa SMOTE nad skaliranim prostorom)
+        # Pipeline po foldu: skaliranje -> SMOTE -> model (redosled bitan: prvo skaliranje)
         pipeline = ImbPipeline([
             ('scaler', preprocessor),
             ('smote', SMOTE(random_state=42)),
@@ -210,8 +206,7 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n2. Podela na Trening / Validacioni / Test skup (70% / 15% / 15%)...")
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(df)
 
-    # Tuning se radi na NESKALIRANIM podacima — skaler je unutar CV pipeline-a (fit po foldu),
-    # pa statistika skaliranja ne curi iz validacionog dela folda.
+    # Tuning na neskaliranim podacima — skaler je unutar CV pipeline-a (fit po foldu)
     print("\n3. Podešavanje hiperparametara (skaler + SMOTE unutar svakog folda — bez curenja)...")
     best_params = tune_hyperparameters(X_train, y_train, metrics_dir)
 

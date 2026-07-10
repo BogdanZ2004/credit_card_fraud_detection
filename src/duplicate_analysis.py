@@ -3,13 +3,7 @@ import os
 
 
 def analyze_duplicates(raw_path, metrics_dir):
-    """Analiza tačnih duplikata u SIROVIM podacima (pre uklanjanja).
-
-    Duplikat = red identičan po SVIM kolonama (Time, V1-V28, Amount, Class).
-    Cilj je utvrditi da li su duplikati češće prevare nego legitimne transakcije,
-    kako bi se svesno odlučilo da li ih uklanjati ili zadržati. Ovo je čista
-    dijagnostika sirovih podataka — ništa se ne menja niti briše.
-    """
+    """Analiza tačnih duplikata u sirovim podacima: da li su češće prevare (dijagnostika, ništa se ne menja)."""
     print("Učitavanje sirovih podataka...")
     try:
         df = pd.read_csv(raw_path)
@@ -28,8 +22,7 @@ def analyze_duplicates(raw_path, metrics_dir):
     maska_svi = df.duplicated(keep=False)
     dup_svi = df[maska_svi]
 
-    # Grupišemo po svim kolonama da dobijemo veličinu svake duplikat-grupe.
-    # Klasa je jedna od kolona (i ista je u celoj grupi jer su redovi identični).
+    # Grupišemo po svim kolonama da dobijemo veličinu svake duplikat-grupe
     velicine = dup_svi.groupby(list(df.columns), sort=False).size().reset_index(name='n')
     fraud_grupe = velicine[velicine['Class'] == 1]
     legit_grupe = velicine[velicine['Class'] == 0]
@@ -38,8 +31,7 @@ def analyze_duplicates(raw_path, metrics_dir):
     broj_fraud_grupa = len(fraud_grupe)
     broj_legit_grupa = len(legit_grupe)
 
-    # "Suvišne kopije" = ono što drop_duplicates() zaista OBRIŠE (n-1 po grupi).
-    # Ovo je konkretno ono što se gubi ako se duplikati uklone.
+    # "Suvišne kopije" = ono što drop_duplicates() obriše (n-1 po grupi)
     visak_ukupno = int((velicine['n'] - 1).sum())
     visak_prevara = int((fraud_grupe['n'] - 1).sum())
     visak_legit = int((legit_grupe['n'] - 1).sum())

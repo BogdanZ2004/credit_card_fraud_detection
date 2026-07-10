@@ -15,20 +15,13 @@ from sklearn.ensemble import RandomForestClassifier
 
 def exhaustive_feature_selection(processed_data_path, original_model_path, metrics_dir,
                                  figures_dir, n_splits=5, n_estimators=100):
-    """Selekcija broja atributa po AUPRC uz unakrsnu validaciju i pravilo 1-SE.
-
-    Rangira atribute po važnosti iz već istreniranog RandomForest-a, zatim za svaki
-    top-k meri AUPRC preko StratifiedKFold CV (skaliranje i SMOTE unutar svakog folda). Broj atributa
-    bira po pravilu 1 standardne greške: najmanji k čiji CV AUPRC nije lošiji od
-    (najbolji AUPRC − 1 SE). Sve se radi na TRENING skupu; test se ne dodiruje.
-    """
+    """Selekcija broja atributa: AUPRC kroz 5-fold CV + pravilo 1-SE, samo na trening skupu."""
     print("1. Učitavanje podataka i originalnog modela...")
     df = pd.read_csv(processed_data_path)
     X = df.drop('Class', axis=1)
     y = df['Class']
 
-    # Ista podela kao u train.py (random_state=42). TEST se NE dira — selekcija se
-    # radi isključivo na TRENING skupu, preko unakrsne validacije. Val/test su van sweep-a.
+    # Ista podela kao u train.py; selekcija se radi samo na trening skupu (test se ne dira)
     X_temp, X_test, y_temp, y_test = train_test_split(
         X, y, test_size=0.15, random_state=42, stratify=y
     )
@@ -36,9 +29,7 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         X_temp, y_temp, test_size=0.1765, random_state=42, stratify=y_temp
     )
 
-    # X_train ostaje NESKALIRAN (zadržava sirovi 'Amount'). Skaliranje se radi UNUTAR
-    # svakog CV folda (ColumnTransformer u pipeline-u), pa statistika skaliranja ne curi
-    # iz validacionog dela folda. Val/test se ovde ni ne koriste.
+    # X_train ostaje neskaliran; skaliranje ide unutar svakog CV folda (bez curenja)
     X_train = X_train.copy()
 
     try:
@@ -47,10 +38,8 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         print(f"Greška: Nije pronađen model na putanji {original_model_path}")
         return
 
-    # Rang atributa po važnosti iz istreniranog RF-a (treniran samo na treningu).
-    # Imena uzimamo direktno iz modela (feature_names_in_) jer X_train ovde nije skaliran,
-    # pa nazivi/redosled kolona ne moraju da se poklope. 'Scaled_Amount' iz modela odgovara
-    # sirovoj koloni 'Amount' u X_train-u (skalira se tek unutar folda).
+    # Rang atributa po važnosti iz istreniranog RF-a; imena iz modela (feature_names_in_).
+    # 'Scaled_Amount' iz modela odgovara sirovoj koloni 'Amount' u X_train-u.
     importances = original_rf.feature_importances_
     feature_df = pd.DataFrame({
         'Atribut': list(original_rf.feature_names_in_),
@@ -60,8 +49,7 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     ranked_features = feature_df['Atribut'].tolist()
     n_features = len(ranked_features)
 
-    # SMOTE UNUTAR svakog folda (kao u train.py) da ne curi u validacioni deo folda.
-    # Metrika je AUPRC (average_precision) — ista headline metrika kao u ostatku projekta.
+    # SMOTE unutar svakog folda (bez curenja); metrika AUPRC (average_precision)
     cv = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
 
     print(f"\n2. Sweep top-1 .. top-{n_features} atributa "
@@ -76,8 +64,7 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
         raw_cols = ['Amount' if c == 'Scaled_Amount' else c for c in top_k]
         X_k = X_train[raw_cols]
 
-        # Skaliranje 'Amount' se radi UNUTAR folda (fit po foldu) ako je u podskupu; ostali
-        # atributi prolaze netaknuti. RF n_jobs=1 jer cross_val_score paralelizuje foldove.
+        # Skaliranje 'Amount' unutar folda ako je u podskupu; RF n_jobs=1 (foldovi se paralelizuju)
         steps = []
         if 'Amount' in raw_cols:
             steps.append(('scaler', ColumnTransformer(
@@ -102,9 +89,7 @@ def exhaustive_feature_selection(processed_data_path, original_model_path, metri
     best_mean = float(means[best_idx])
     best_se = float(ses[best_idx])
 
-    # (b) Pravilo 1 standardne greške (1-SE): najMANJI k čiji prosečni AUPRC nije
-    # lošiji od (najbolji − 1 SE najboljeg). Bira najjednostavniji model koji je
-    # statistički nerazlučiv od najboljeg -> parsimonija ("da li mi treba svih 30?").
+    # (b) Pravilo 1-SE: najmanji k čiji AUPRC nije lošiji od (najbolji − 1 SE) -> parsimonija
     prag_1se = best_mean - best_se
     onese_idx = int(np.argmax(means >= prag_1se))  # prvi (najmanji) k iznad praga
     onese_k = rezultati[onese_idx]['k']
