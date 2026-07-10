@@ -1,0 +1,9 @@
+=== PODEŠAVANJE PRAGA ODLUKE (F2, na validaciji) ===
+F2 naglašava odziv 4x — propuštena prevara je skuplja od lažne uzbune.
+
+Model                   Opt.prag   F2(0.5)   F2(opt)
+DecisionTree                0.94    0.2565    0.7126
+LogisticRegression          0.95    0.2127    0.5586
+RandomForest_100            0.56    0.8475    0.8499
+RandomForest_150            0.57    0.8475    0.8547
+XGBoost                     0.94    0.8127    0.8357

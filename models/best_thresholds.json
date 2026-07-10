@@ -1,7 +1,7 @@
 {
-  "DecisionTree": 0.95,
+  "DecisionTree": 0.94,
   "LogisticRegression": 0.95,
-  "RandomForest_100": 0.5,
-  "RandomForest_150": 0.52,
-  "XGBoost": 0.84
+  "RandomForest_100": 0.56,
+  "RandomForest_150": 0.57,
+  "XGBoost": 0.94
 }
