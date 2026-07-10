@@ -5,5 +5,5 @@ Model                   Opt.prag   F2(0.5)   F2(opt)
 DecisionTree                0.95    0.1769    0.7056
 LogisticRegression          0.95    0.2175    0.5439
 RandomForest_100            0.50    0.8596    0.8596
-RandomForest_150            0.52    0.8596    0.8621
+RandomForest_150            0.50    0.8596    0.8596
 XGBoost                     0.84    0.8403    0.8406

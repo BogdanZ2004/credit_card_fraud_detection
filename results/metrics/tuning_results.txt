@@ -1,5 +1,5 @@
 === REZULTATI PODEŠAVANJA HIPERPARAMETARA (RandomizedSearchCV) ===
-Optimizovano po AUPRC | SMOTE primenjen unutar svakog folda
+Optimizovano po AUPRC | skaler + SMOTE primenjeni unutar svakog folda
 
 --- LogisticRegression ---
 Najbolji parametri: {'C': 100}
@@ -7,17 +7,17 @@ Najbolji AUPRC (CV): 0.7368
 
 --- DecisionTree ---
 Najbolji parametri: {'min_samples_leaf': 8, 'max_depth': 10, 'criterion': 'entropy'}
-Najbolji AUPRC (CV): 0.5870
+Najbolji AUPRC (CV): 0.5865
 
 --- RandomForest_100 ---
 Najbolji parametri: {'max_features': 'log2', 'max_depth': None}
-Najbolji AUPRC (CV): 0.8379
+Najbolji AUPRC (CV): 0.8426
 
 --- RandomForest_150 ---
-Najbolji parametri: {'max_features': 'sqrt', 'max_depth': None}
-Najbolji AUPRC (CV): 0.8383
+Najbolji parametri: {'max_features': 'log2', 'max_depth': None}
+Najbolji AUPRC (CV): 0.8430
 
 --- XGBoost ---
 Najbolji parametri: {'subsample': 0.8, 'max_depth': 7, 'learning_rate': 0.3, 'colsample_bytree': 1.0}
-Najbolji AUPRC (CV): 0.8433
+Najbolji AUPRC (CV): 0.8355
 
