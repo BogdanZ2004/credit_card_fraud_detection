@@ -1,0 +1,77 @@
+=== SELEKCIJA ATRIBUTA (AUPRC, 5-fold CV na treningu, pravilo 1-SE) ===
+Rang je iz istreniranog RandomForest-a; ocena po AUPRC uz SMOTE unutar folda.
+Test skup se NE koristi — izbor je isključivo na trening skupu (CV).
+
+--- Rang atributa po važnosti ---
+ 1. V14              značaj = 0.1781
+ 2. V4               značaj = 0.0969
+ 3. V12              značaj = 0.0930
+ 4. V17              značaj = 0.0921
+ 5. V10              značaj = 0.0807
+ 6. V11              značaj = 0.0681
+ 7. V16              značaj = 0.0554
+ 8. V3               značaj = 0.0526
+ 9. V2               značaj = 0.0452
+10. V7               značaj = 0.0381
+11. V9               značaj = 0.0295
+12. V21              značaj = 0.0193
+13. V18              značaj = 0.0155
+14. V8               značaj = 0.0122
+15. Hour             značaj = 0.0111
+16. V5               značaj = 0.0108
+17. V19              značaj = 0.0108
+18. V28              značaj = 0.0103
+19. V20              značaj = 0.0093
+20. V27              značaj = 0.0092
+21. V1               značaj = 0.0084
+22. V6               značaj = 0.0081
+23. V26              značaj = 0.0071
+24. Scaled_Amount    značaj = 0.0065
+25. V13              značaj = 0.0064
+26. V24              značaj = 0.0059
+27. V15              značaj = 0.0058
+28. V23              značaj = 0.0047
+29. V22              značaj = 0.0044
+30. V25              značaj = 0.0044
+
+--- AUPRC po broju atributa (mean ± SE) ---
+k= 1: 0.1074 ± 0.0054
+k= 2: 0.3543 ± 0.0123
+k= 3: 0.6880 ± 0.0172
+k= 4: 0.7451 ± 0.0238
+k= 5: 0.7738 ± 0.0095
+k= 6: 0.7862 ± 0.0166
+k= 7: 0.7994 ± 0.0178
+k= 8: 0.8005 ± 0.0130
+k= 9: 0.7920 ± 0.0137
+k=10: 0.7974 ± 0.0099
+k=11: 0.7996 ± 0.0163
+k=12: 0.8039 ± 0.0113
+k=13: 0.8101 ± 0.0150
+k=14: 0.8118 ± 0.0169
+k=15: 0.8188 ± 0.0160
+k=16: 0.8159 ± 0.0173
+k=17: 0.8182 ± 0.0190
+k=18: 0.8268 ± 0.0159  <-- izbor 1-SE
+k=19: 0.8294 ± 0.0139
+k=20: 0.8268 ± 0.0148
+k=21: 0.8229 ± 0.0188
+k=22: 0.8318 ± 0.0141
+k=23: 0.8365 ± 0.0159
+k=24: 0.8369 ± 0.0168
+k=25: 0.8322 ± 0.0164
+k=26: 0.8281 ± 0.0178
+k=27: 0.8376 ± 0.0171
+k=28: 0.8357 ± 0.0191
+k=29: 0.8358 ± 0.0170
+k=30: 0.8415 ± 0.0173  <-- maks. AUPRC
+
+Najbolji prosečni AUPRC: k=30 (0.8415 ± 0.0173)
+Prag 1-SE: 0.8242  (= najbolji AUPRC − 1 SE)
+Izbor po pravilu 1-SE: k=18 atributa
+Izabrani atributi: V14, V4, V12, V17, V10, V11, V16, V3, V2, V7, V9, V21, V18, V8, Hour, V5, V19, V28
+
+Tumačenje: k(1-SE) je najmanji broj atributa čiji je CV AUPRC statistički
+neizrazliv (unutar 1 standardne greške) od najboljeg. To je predlog za
+sekundarnu granu; finalni modeli se tamo treniraju na ovih k atributa i
+tek onda jednom ocenjuju na test skupu.

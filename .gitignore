@@ -13,8 +13,5 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Lokalno poređenje rezultata između grana (samo za dokumentaciju)
-poredjenje_rezultata/
-
 # OS
 .DS_Store

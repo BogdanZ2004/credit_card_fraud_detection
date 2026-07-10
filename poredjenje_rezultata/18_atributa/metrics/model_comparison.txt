@@ -1,0 +1,56 @@
+=== POREĐENJE MODELA ZA DETEKCIJU PREVARA ===
+
+--- DecisionTree ---
+Preciznost (Precision): 0.0605
+Odziv (Recall):         0.7887  <-- NAJBITNIJE
+F1-skor:                0.1124
+F2-skor:                0.2316
+ROC AUC:                0.8912
+AUPRC:                  0.6054
+
+--- LogisticRegression ---
+Preciznost (Precision): 0.0512
+Odziv (Recall):         0.8592  <-- NAJBITNIJE
+F1-skor:                0.0967
+F2-skor:                0.2068
+ROC AUC:                0.9630
+AUPRC:                  0.6231
+
+--- RandomForest_100 ---
+Preciznost (Precision): 0.8710
+Odziv (Recall):         0.7606  <-- NAJBITNIJE
+F1-skor:                0.8120
+F2-skor:                0.7803
+ROC AUC:                0.9635
+AUPRC:                  0.8115
+
+--- RandomForest_150 ---
+Preciznost (Precision): 0.8710
+Odziv (Recall):         0.7606  <-- NAJBITNIJE
+F1-skor:                0.8120
+F2-skor:                0.7803
+ROC AUC:                0.9684
+AUPRC:                  0.8115
+
+--- XGBoost ---
+Preciznost (Precision): 0.8169
+Odziv (Recall):         0.8169  <-- NAJBITNIJE
+F1-skor:                0.8169
+F2-skor:                0.8169
+ROC AUC:                0.9791
+AUPRC:                  0.8141
+
+--- Baseline (nasumičan klasifikator) ---
+Preciznost (Precision): 0.0000
+Odziv (Recall):         0.0000
+AUPRC (izmereno):       0.0008
+AUPRC (teorijski):      0.0017  (= stopa prevara u testu; linija na PR krivoj)
+(Svi istrenirani modeli su znatno bolji od ovoga -> uče prave obrasce.)
+
+=== ZBIRNA TABELA (sve metrike, test skup, prag 0.5) ===
+Model                     Prec  Recall      F1      F2  ROC-AUC   AUPRC
+DecisionTree            0.0605  0.7887  0.1124  0.2316   0.8912  0.6054
+LogisticRegression      0.0512  0.8592  0.0967  0.2068   0.9630  0.6231
+RandomForest_100        0.8710  0.7606  0.8120  0.7803   0.9635  0.8115
+RandomForest_150        0.8710  0.7606  0.8120  0.7803   0.9684  0.8115
+XGBoost                 0.8169  0.8169  0.8169  0.8169   0.9791  0.8141

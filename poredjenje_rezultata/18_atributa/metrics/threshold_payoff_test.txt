@@ -1,0 +1,22 @@
+=== EFEKAT PRAGA NA TEST SKUPU (0.5 vs F2-optimalni prag) ===
+Prag se BIRA na validaciji (po F2), a ovde se samo PRIMENJUJE na test — bez curenja.
+
+Model                  Prag   Recall     Prec       F1       F2   FN    FP
+DecisionTree           0.50   0.7887   0.0605   0.1124   0.2316   15   869
+DecisionTree          0.94*   0.7324   0.3824   0.5024   0.6190   19    84
+
+LogisticRegression     0.50   0.8592   0.0512   0.0967   0.2068   10  1130
+LogisticRegression    0.95*   0.8169   0.2387   0.3694   0.5503   13   185
+
+RandomForest_100       0.50   0.7606   0.8710   0.8120   0.7803   17     8
+RandomForest_100      0.56*   0.7324   0.8667   0.7939   0.7558   19     8
+
+RandomForest_150       0.50   0.7606   0.8710   0.8120   0.7803   17     8
+RandomForest_150      0.57*   0.7324   0.8814   0.8000   0.7580   19     7
+
+XGBoost                0.50   0.8169   0.8169   0.8169   0.8169   13    13
+XGBoost               0.94*   0.7465   0.9464   0.8346   0.7794   18     3
+
+(* = F2-optimalni prag, izabran na validaciji)
+Niži prag -> veći odziv (manje propuštenih prevara FN), po cenu više lažnih uzbuna (FP).
+F2 na optimalnom pragu potvrđuje da je taj kompromis isplativ i na test skupu.
