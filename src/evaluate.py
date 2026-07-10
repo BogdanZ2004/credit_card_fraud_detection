@@ -24,7 +24,7 @@ def select_best_model_on_validation(val_data_path, models_dir, metrics_dir):
     # Poredi sve istrenirane modele na validacionom skupu i bira najbolji (po AUPRC)
     print("Izbor najboljeg modela na validacionom skupu...")
     df = pd.read_csv(val_data_path)
-    X_val = df.drop('Class', axis=1)
+    X_val = df.drop(['Class', 'Scaled_Amount'], axis=1)  # Scaled_Amount se čuva samo za prikaz, nije atribut
     y_val = df['Class']
 
     os.makedirs(metrics_dir, exist_ok=True)
@@ -64,7 +64,7 @@ def optimize_threshold(val_data_path, models_dir, metrics_dir, beta=2):
     # nikad na testu. Optimalni prag postaje "pametna" podrazumevana vrednost za aplikaciju.
     print("Podešavanje praga odluke na validacionom skupu (po F2)...")
     df = pd.read_csv(val_data_path)
-    X_val = df.drop('Class', axis=1)
+    X_val = df.drop(['Class', 'Scaled_Amount'], axis=1)  # Scaled_Amount se čuva samo za prikaz, nije atribut
     y_val = df['Class']
 
     os.makedirs(metrics_dir, exist_ok=True)
@@ -106,7 +106,7 @@ def optimize_threshold(val_data_path, models_dir, metrics_dir, beta=2):
 def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     print("1. Učitavanje Test seta...")
     df = pd.read_csv(test_data_path)
-    X_test = df.drop('Class', axis=1)
+    X_test = df.drop(['Class', 'Scaled_Amount'], axis=1)  # Scaled_Amount se čuva samo za prikaz, nije atribut
     y_test = df['Class']
 
     os.makedirs(figures_dir, exist_ok=True)
@@ -119,7 +119,7 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
 
     # Scaler za vraćanje skaliranog iznosa u stvarni (za analizu grešaka po iznosu)
     scaler = joblib.load(os.path.join(models_dir, 'scaler.pkl'))
-    realni_iznos = scaler.inverse_transform(X_test[['Scaled_Amount']])[:, 0]
+    realni_iznos = scaler.inverse_transform(df[['Scaled_Amount']])[:, 0]  # iz punog df-a (X_test više nema tu kolonu)
 
     # F2-optimalni pragovi izabrani na validaciji (KORAK 6) — za poređenje 0.5 vs optimalni na testu.
     # Ako fajl ne postoji, optimalni prag pada na 0.5 (bez efekta), uz upozorenje u izveštaju.

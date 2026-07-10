@@ -104,16 +104,17 @@ if st.session_state.selected_tx is not None:
     st.json({
         "Sat transakcije (Hour)": f"{int(tx_data['Hour'])}:00",
         "Iznos transakcije": f"{stvarni_iznos:.2f}",
-        "V1 parametar": round(tx_data['V1'], 4),
-        "V2 parametar": round(tx_data['V2'], 4)
+        "V14 parametar": round(tx_data['V14'], 4),
+        "V4 parametar": round(tx_data['V4'], 4)
     })
 
     st.subheader(f"2. Odluka Modela: {selected_model_name}")
 
     if st.button("Pitaj Sistem", type="primary"):
         with st.spinner("Analiza u toku..."):
-            # Verovatnoća prevare i odluka na osnovu praga
-            proba = model.predict_proba(st.session_state.selected_tx)[0]
+            # Verovatnoća prevare i odluka na osnovu praga.
+            # Scaled_Amount se izbacuje jer nije atribut modela (čuva se samo za prikaz iznosa).
+            proba = model.predict_proba(st.session_state.selected_tx.drop('Scaled_Amount', axis=1))[0]
             verovatnoca_prevare = proba[1]
             is_fraud = verovatnoca_prevare >= threshold
 

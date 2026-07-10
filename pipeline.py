@@ -9,7 +9,6 @@ from data_preparation import prepare_data
 from eda_analysis import run_eda
 from train import train_pipeline
 from evaluate import select_best_model_on_validation, optimize_threshold, evaluate_models
-from feature_selection import exhaustive_feature_selection
 
 # Apsolutne putanje ka svim folderima i fajlovima projekta
 BASE_DIR    = os.path.dirname(os.path.abspath(__file__))
@@ -18,17 +17,17 @@ PROCESSED   = os.path.join(BASE_DIR, 'data', 'processed', 'creditcard_processed.
 VAL_SET     = os.path.join(BASE_DIR, 'data', 'processed', 'val_set.csv')
 TEST_SET    = os.path.join(BASE_DIR, 'data', 'processed', 'test_set.csv')
 MODELS_DIR  = os.path.join(BASE_DIR, 'models')
-RF_MODEL    = os.path.join(MODELS_DIR, 'RandomForest_100.pkl')
 FIGURES_DIR = os.path.join(BASE_DIR, 'results', 'figures')
 METRICS_DIR = os.path.join(BASE_DIR, 'results', 'metrics')
 
-# Redosled koraka je namerno takav da se izbegne curenje podataka (data leakage):
+# Ova grana (18_atributa) trenira modele na 18 atributa izabranih na main grani
+# (pravilo 1-SE). Zato ovde NEMA koraka selekcije atributa — lista atributa je fiksna
+# u train.SELECTED_FEATURES. Redosled koraka i dalje sprečava curenje podataka:
 #   - analiza duplikata je čista dijagnostika sirovih podataka (ništa se ne menja),
 #   - podela na train/val/test se radi u train.py; skaliranje i SMOTE se fituju
-#     ISKLJUČIVO na trening skupu (koraci unutar train.py),
-#   - izbor modela i podešavanje praga gledaju SAMO validaciju, a selekcija atributa
-#     radi unakrsnu validaciju na trening skupu — nijedan korak ne dira test,
-#   - test skup se dodiruje TEK na kraju (KORAK 8), samo za finalni izveštaj.
+#     ISKLJUČIVO na trening skupu,
+#   - izbor modela i podešavanje praga gledaju SAMO validaciju,
+#   - test skup se dodiruje TEK na kraju (KORAK 7), samo za finalni izveštaj.
 
 if __name__ == "__main__":
     print("=" * 60)
@@ -47,7 +46,7 @@ if __name__ == "__main__":
     run_eda(PROCESSED, FIGURES_DIR, METRICS_DIR)
 
     print("\n" + "=" * 60)
-    print("KORAK 4: Treniranje modela")
+    print("KORAK 4: Treniranje modela (na 18 izabranih atributa)")
     print("=" * 60)
     train_pipeline(PROCESSED, MODELS_DIR, VAL_SET, TEST_SET, METRICS_DIR)
 
@@ -62,12 +61,7 @@ if __name__ == "__main__":
     optimize_threshold(VAL_SET, MODELS_DIR, METRICS_DIR)
 
     print("\n" + "=" * 60)
-    print("KORAK 7: Selekcija atributa (AUPRC, 5-fold CV na treningu, pravilo 1-SE)")
-    print("=" * 60)
-    exhaustive_feature_selection(PROCESSED, RF_MODEL, METRICS_DIR, FIGURES_DIR)
-
-    print("\n" + "=" * 60)
-    print("KORAK 8: Evaluacija modela na test skupu")
+    print("KORAK 7: Evaluacija modela na test skupu")
     print("=" * 60)
     evaluate_models(TEST_SET, MODELS_DIR, FIGURES_DIR, METRICS_DIR)
 

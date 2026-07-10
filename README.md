@@ -2,6 +2,8 @@
 
 Projekat mašinskog učenja — binarna klasifikacija transakcija kreditnim karticama kao legitimnih ili prevarantskih, korišćenjem klasičnih ML modela (Logistička regresija, Stablo odlučivanja, Random Forest, XGBoost).
 
+> **Grana `18_atributa`:** varijanta glavnog projekta koja trenira modele na **18 izabranih atributa** (umesto svih 30), radi poređenja sa `main` granom. Detalji u sekciji „Izabrani atributi". Rezultati u `results/` se regenerišu pokretanjem pipeline-a i odražavaju 18 atributa.
+
 ---
 
 ## Dataset
@@ -50,12 +52,11 @@ Svaka transakcija sadrži:
 - **Podešavanje praga po F2** (`threshold_optimization.txt`) — optimalan prag odluke na validaciji (F2 naglašava odziv). Pragovi se čuvaju i mašinski čitljivo u `models/best_thresholds.json` odakle ih Streamlit aplikacija učitava kao podrazumevani prag po modelu.
 - **Potvrda praga na test skupu** (`threshold_payoff_test.txt`) — po modelu, poređenje metrika na pragu 0.5 vs na F2-optimalnom pragu (izabranom na validaciji), primenjeno na test skup — pokazuje da izabrani prag i na nevidljivim podacima podiže odziv (uz očekivani pad preciznosti).
 
-### Odabir atributa (`src/feature_selection.py`)
-- Atributi se rangiraju po važnosti iz već istreniranog Random Forest modela (treniran isključivo na trening skupu).
-- Za svaki top-k podskup meri se **AUPRC** kroz **5-fold stratifikovanu unakrsnu validaciju na trening skupu** (SMOTE unutar svakog folda) — test skup se **ne dodiruje**.
-- Broj atributa se bira **pravilom 1 standardne greške (1-SE)**: najmanji k čiji je CV AUPRC unutar jedne standardne greške od najboljeg — najparsimoničniji model koji je statistički nerazlučiv od najboljeg.
-- Rezultat: rang lista + grafik `feature_selection_auprc_vs_k.png` (AUPRC vs broj atributa sa pragom 1-SE).
-- Deo je pipeline-a kao **KORAK 6** (posle treniranja, pre finalne evaluacije na testu). Na ovoj grani (svih 30 atributa) služi kao **informativna analiza** — finalni modeli i dalje koriste sve atribute. Predlog broja atributa je osnova za posebnu granu koja modele trenira na izabranom podskupu i tek onda jednom ocenjuje na test skupu.
+### Izabrani atributi (grana `18_atributa`)
+- Ova grana trenira modele **isključivo na 18 atributa** izabranih na `main` grani (selekcija po **pravilu 1-SE**: najmanji broj atributa čiji je CV AUPRC statistički nerazlučiv od svih 30).
+- Lista je fiksna u `train.SELECTED_FEATURES`: `V14, V4, V12, V17, V10, V11, V16, V3, V2, V7, V9, V21, V18, V8, Hour, V5, V19, V28`.
+- **`Amount` nije među njima** (nije prošao selekciju), pa se ne koristi kao atribut. I dalje se čuva u val/test skupu (`Scaled_Amount`) samo radi prikaza iznosa u aplikaciji i analize grešaka po iznosu.
+- Zato ova grana **nema korak selekcije atributa** u pipeline-u (taj posao je obavljen na `main`) — cilj je da se uporedi sa `main` (30 atributa) i utvrdi da li manji, pametno izabran skup daje jednako dobre rezultate.
 
 ---
 
@@ -76,7 +77,7 @@ Svaka transakcija sadrži:
 │   ├── eda_analysis.py            # Eksplorativna analiza (EDA)
 │   ├── train.py                   # Podela, skaliranje, SMOTE, tuning, treniranje
 │   ├── evaluate.py                # Evaluacija modela i generisanje grafika
-│   └── feature_selection.py       # Analiza važnosti atributa
+│                                  # (nema feature_selection.py — grana koristi fiksnih 18 atributa)
 ├── app/
 │   └── app.py                     # Streamlit web aplikacija
 ├── pipeline.py                    # Glavni ulaz — pokreće ceo pipeline
@@ -109,7 +110,7 @@ uv run python -m streamlit run app/app.py
 Za potpuno treniranje od nule potrebno je preuzeti `creditcard.csv` sa [Kaggle-a](https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud) i smestiti ga u `data/raw/`, zatim pokrenuti:
 
 ```bash
-# Pokretanje celog pipeline-a (analiza duplikata → priprema → EDA → treniranje → izbor modela/prag → selekcija atributa → evaluacija)
+# Pokretanje celog pipeline-a (analiza duplikata → priprema → EDA → treniranje na 18 atributa → izbor modela/prag → evaluacija)
 uv run python pipeline.py
 ```
 

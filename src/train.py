@@ -11,6 +11,15 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
+# Atributi izabrani na main grani (pravilo 1-SE u feature_selection.py). Ova grana
+# trenira modele ISKLJUČIVO na njih 18. 'Scaled_Amount' NIJE prošao selekciju, pa se
+# ne koristi kao atribut — ali ga i dalje čuvamo u val/test skupu radi prikaza u
+# aplikaciji i analize grešaka po iznosu.
+SELECTED_FEATURES = [
+    'V14', 'V4', 'V12', 'V17', 'V10', 'V11', 'V16', 'V3', 'V2',
+    'V7', 'V9', 'V21', 'V18', 'V8', 'Hour', 'V5', 'V19', 'V28',
+]
+
 # Prostori pretrage hiperparametara za svaki model koji se koriste u RandomizedSearchCV
 SEARCH_SPACES = {
     "LogisticRegression": {
@@ -201,21 +210,27 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n3. Skaliranje 'Amount' kolone (fit samo na trening skupu)...")
     X_train, X_val, X_test = scale_features(X_train, X_val, X_test, models_dir)
 
+    print(f"\n3b. Redukcija na {len(SELECTED_FEATURES)} izabranih atributa (bez Amount-a)...")
+    X_train_sel = X_train[SELECTED_FEATURES]  # modeli se treniraju SAMO na izabranim atributima
+
     print("\n4. Podešavanje hiperparametara (RandomizedSearchCV, SMOTE unutar folda)...")
-    best_params = tune_hyperparameters(X_train, y_train, metrics_dir)
+    best_params = tune_hyperparameters(X_train_sel, y_train, metrics_dir)
 
     print("\n5. Primena SMOTE tehnike SAMO na Trening setu...")
-    X_train_smote, y_train_smote = apply_smote(X_train, y_train)
+    X_train_smote, y_train_smote = apply_smote(X_train_sel, y_train)
 
     print("\n6. Treniranje finalnih modela sa najboljim parametrima...")
     train_models(X_train_smote, y_train_smote, best_params, models_dir)
 
     print("\n7. Čuvanje Validacionog i Test seta za evaluaciju...")
-    val_df = X_val.copy()
+    # Čuvamo 18 izabranih atributa + Scaled_Amount (samo za prikaz/analizu) + Class.
+    # Potrošači (evaluate, app) izbacuju 'Scaled_Amount' pre predikcije -> ostaje 18 atributa.
+    save_cols = SELECTED_FEATURES + ['Scaled_Amount']
+    val_df = X_val[save_cols].copy()
     val_df['Class'] = y_val
     val_df.to_csv(val_data_path, index=False)
 
-    test_df = X_test.copy()
+    test_df = X_test[save_cols].copy()
     test_df['Class'] = y_test
     test_df.to_csv(test_data_path, index=False)
 
