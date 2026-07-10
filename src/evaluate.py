@@ -59,9 +59,7 @@ def select_best_model_on_validation(val_data_path, models_dir, metrics_dir):
 
 
 def optimize_threshold(val_data_path, models_dir, metrics_dir, beta=2):
-    # Traži prag odluke koji maksimizuje F2 na VALIDACIJI (F2 naglašava odziv 4x
-    # jer je propuštena prevara skuplja od lažne uzbune). Prag se bira na validaciji,
-    # nikad na testu. Optimalni prag postaje "pametna" podrazumevana vrednost za aplikaciju.
+    # Bira prag koji maksimizuje F2 na validaciji (nikad na testu); F2 naglašava odziv 4x
     print("Podešavanje praga odluke na validacionom skupu (po F2)...")
     df = pd.read_csv(val_data_path)
     X_val = df.drop(['Class', 'Scaled_Amount'], axis=1)  # Scaled_Amount se čuva samo za prikaz, nije atribut
@@ -92,8 +90,7 @@ def optimize_threshold(val_data_path, models_dir, metrics_dir, beta=2):
             najbolji_po_modelu[name] = best_t
             f.write(f"{name:22s} {best_t:9.2f} {f2_default:9.4f} {best_f2:9.4f}\n")
 
-    # Mašinski čitljiv zapis pragova — app.py ga učitava da postavi podrazumevani
-    # (F2-optimalni) prag za izabrani model, uz zadržavanje ručnog klizača.
+    # Mašinski čitljiv zapis pragova — app.py ga učitava za podrazumevani prag po modelu
     thresholds_json = os.path.join(models_dir, 'best_thresholds.json')
     with open(thresholds_json, 'w', encoding='utf-8') as jf:
         json.dump(najbolji_po_modelu, jf, indent=2)
@@ -121,8 +118,7 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     scaler = joblib.load(os.path.join(models_dir, 'scaler.pkl'))
     realni_iznos = scaler.inverse_transform(df[['Scaled_Amount']])[:, 0]  # iz punog df-a (X_test više nema tu kolonu)
 
-    # F2-optimalni pragovi izabrani na validaciji (KORAK 6) — za poređenje 0.5 vs optimalni na testu.
-    # Ako fajl ne postoji, optimalni prag pada na 0.5 (bez efekta), uz upozorenje u izveštaju.
+    # F2-optimalni pragovi sa validacije — za poređenje 0.5 vs optimalni prag na testu
     try:
         with open(os.path.join(models_dir, 'best_thresholds.json'), encoding='utf-8') as tf:
             tuned_thresholds = json.load(tf)
@@ -166,8 +162,7 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
         pr_curves.append((model_name, pr_recall, pr_precision, auprc))
         summary.append((model_name, precision, recall, f1, f2, roc_auc, auprc))
 
-        # Poređenje: metrike na 0.5 vs na F2-optimalnom pragu (izabranom na validaciji),
-        # mereno na TEST skupu. Prag se ovde samo PRIMENJUJE na test -> nema curenja.
+        # Metrike na pragu 0.5 vs F2-optimalni prag, mereno na testu (prag se samo primenjuje)
         t_opt = float(tuned_thresholds.get(model_name, 0.5))
         y_pred_opt = (y_proba >= t_opt).astype(int)
         base_row = (recall, precision, f1, f2,
@@ -266,11 +261,8 @@ def evaluate_models(test_data_path, models_dir, figures_dir, metrics_dir):
     plt.close()
     print(f"Grafik poređenja sačuvan u: {bar_fig_path}")
 
-    # Baseline: nasumičan klasifikator (predviđa po raspodeli klasa) — dokaz da modeli
-    # uče prave obrasce, a ne da samo eksploatišu neuravnoteženost.
-    # DummyClassifier ignoriše atribute — fit uči samo raspodelu klasa, koja je zbog
-    # stratifikovane podele ista u train/val/test, pa je fit ovde ekvivalentan fitu
-    # na treningu (nema curenja informacija).
+    # Baseline: nasumičan klasifikator (po raspodeli klasa) — dokaz da modeli uče prave obrasce.
+    # DummyClassifier ignoriše atribute, pa fit na testu ne donosi curenje informacija.
     dummy = DummyClassifier(strategy='stratified', random_state=42)
     dummy.fit(X_test, y_test)
     yb = dummy.predict(X_test)

@@ -9,9 +9,7 @@ def prepare_data(input_path, output_path):
         print(f"Greška: Fajl {input_path} nije pronađen. Proveri putanju!")
         return
 
-    # Uklanjanje tačnih duplikata na SIROVIM podacima (pre Time->Hour) — artefakti su
-    # (isti Time, iste V vrednosti, isti iznos). Radi se ovde da isti primer ne bi
-    # završio i u trening i u test skupu posle podele (sprečavanje curenja).
+    # Tačni duplikati se brišu na sirovim podacima da isti primer ne završi i u treningu i u testu
     pre = len(df)
     df = df.drop_duplicates()
     print(f"1. Uklonjeno {pre - len(df)} tačnih duplikata (ostalo {len(df)} redova)")

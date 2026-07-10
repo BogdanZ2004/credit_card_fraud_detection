@@ -11,10 +11,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 
-# Atributi izabrani na main grani (pravilo 1-SE u feature_selection.py). Ova grana
-# trenira modele ISKLJUČIVO na njih 18. 'Scaled_Amount' NIJE prošao selekciju, pa se
-# ne koristi kao atribut — ali ga i dalje čuvamo u val/test skupu radi prikaza u
-# aplikaciji i analize grešaka po iznosu.
+# Atributi izabrani na main grani (pravilo 1-SE). Modeli se treniraju samo na njih 18;
+# 'Scaled_Amount' nije atribut, ali ga čuvamo u val/test radi prikaza i analize iznosa.
 SELECTED_FEATURES = [
     'V14', 'V4', 'V12', 'V17', 'V10', 'V11', 'V16', 'V3', 'V2',
     'V7', 'V9', 'V21', 'V18', 'V8', 'Hour', 'V5', 'V19', 'V28',
@@ -223,8 +221,7 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     train_models(X_train_smote, y_train_smote, best_params, models_dir)
 
     print("\n7. Čuvanje Validacionog i Test seta za evaluaciju...")
-    # Čuvamo 18 izabranih atributa + Scaled_Amount (samo za prikaz/analizu) + Class.
-    # Potrošači (evaluate, app) izbacuju 'Scaled_Amount' pre predikcije -> ostaje 18 atributa.
+    # Čuvamo 18 atributa + Scaled_Amount (samo za prikaz) + Class; potrošači izbace Scaled_Amount pre predikcije
     save_cols = SELECTED_FEATURES + ['Scaled_Amount']
     val_df = X_val[save_cols].copy()
     val_df['Class'] = y_val

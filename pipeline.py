@@ -20,14 +20,8 @@ MODELS_DIR  = os.path.join(BASE_DIR, 'models')
 FIGURES_DIR = os.path.join(BASE_DIR, 'results', 'figures')
 METRICS_DIR = os.path.join(BASE_DIR, 'results', 'metrics')
 
-# Ova grana (18_atributa) trenira modele na 18 atributa izabranih na main grani
-# (pravilo 1-SE). Zato ovde NEMA koraka selekcije atributa — lista atributa je fiksna
-# u train.SELECTED_FEATURES. Redosled koraka i dalje sprečava curenje podataka:
-#   - analiza duplikata je čista dijagnostika sirovih podataka (ništa se ne menja),
-#   - podela na train/val/test se radi u train.py; skaliranje i SMOTE se fituju
-#     ISKLJUČIVO na trening skupu,
-#   - izbor modela i podešavanje praga gledaju SAMO validaciju,
-#   - test skup se dodiruje TEK na kraju (KORAK 7), samo za finalni izveštaj.
+# Ova grana trenira modele na 18 atributa izabranih na main grani (pravilo 1-SE),
+# pa nema koraka selekcije. Redosled koraka sprečava curenje — test se dira tek na kraju.
 
 if __name__ == "__main__":
     print("=" * 60)
