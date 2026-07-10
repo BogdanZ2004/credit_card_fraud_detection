@@ -3,6 +3,7 @@ import os
 import joblib
 from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
 from sklearn.preprocessing import RobustScaler
+from sklearn.compose import ColumnTransformer
 from imblearn.over_sampling import SMOTE
 from imblearn.pipeline import Pipeline as ImbPipeline
 
@@ -107,24 +108,35 @@ def apply_smote(X_train, y_train, random_state=42):
 
 
 def tune_hyperparameters(X_train, y_train, metrics_dir):
-    # SMOTE je unutar pipeline-a svakog folda kako ne bi curio u validacioni deo folda
+    # Skaliranje I SMOTE su UNUTAR pipeline-a svakog folda kako ne bi curili u validacioni
+    # deo folda. X_train ovde stiže NESKALIRAN (sa sirovim 'Amount'); skaler se fita
+    # posebno na trening deo svakog folda.
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
     base_models = get_base_models()
     best_params_all = {}
+
+    # RobustScaler se primenjuje SAMO na 'Amount'; ostali atributi (Hour, V1-V28) prolaze
+    # netaknuti. Fituje se iznova u svakom foldu -> nema curenja statistike skaliranja.
+    preprocessor = ColumnTransformer(
+        transformers=[('amount', RobustScaler(), ['Amount'])],
+        remainder='passthrough',
+    )
 
     os.makedirs(metrics_dir, exist_ok=True)
     results_file = os.path.join(metrics_dir, 'tuning_results.txt')
 
     with open(results_file, 'w', encoding='utf-8') as f:
         f.write("=== REZULTATI PODEŠAVANJA HIPERPARAMETARA (RandomizedSearchCV) ===\n")
-        f.write("Optimizovano po AUPRC | SMOTE primenjen unutar svakog folda\n\n")
+        f.write("Optimizovano po AUPRC | skaler + SMOTE primenjeni unutar svakog folda\n\n")
 
     for name, model in base_models.items():
         print(f"   -> Podešavam {name}...")
         space = SEARCH_SPACES[name]
 
-        # Pipeline kombinuje SMOTE i model kako bi se SMOTE primenjivao unutar svakog folda
+        # Pipeline: skaliranje -> SMOTE -> model, sve unutar svakog folda (redosled je bitan:
+        # prvo skaliranje, pa SMOTE nad skaliranim prostorom)
         pipeline = ImbPipeline([
+            ('scaler', preprocessor),
             ('smote', SMOTE(random_state=42)),
             ('model', model)
         ])
@@ -198,11 +210,13 @@ def train_pipeline(processed_data_path, models_dir, val_data_path, test_data_pat
     print("\n2. Podela na Trening / Validacioni / Test skup (70% / 15% / 15%)...")
     X_train, X_val, X_test, y_train, y_val, y_test = split_data(df)
 
-    print("\n3. Skaliranje 'Amount' kolone (fit samo na trening skupu)...")
-    X_train, X_val, X_test = scale_features(X_train, X_val, X_test, models_dir)
-
-    print("\n4. Podešavanje hiperparametara (RandomizedSearchCV, SMOTE unutar folda)...")
+    # Tuning se radi na NESKALIRANIM podacima — skaler je unutar CV pipeline-a (fit po foldu),
+    # pa statistika skaliranja ne curi iz validacionog dela folda.
+    print("\n3. Podešavanje hiperparametara (skaler + SMOTE unutar svakog folda — bez curenja)...")
     best_params = tune_hyperparameters(X_train, y_train, metrics_dir)
+
+    print("\n4. Skaliranje 'Amount' kolone (fit na celom trening skupu) za finalne modele...")
+    X_train, X_val, X_test = scale_features(X_train, X_val, X_test, models_dir)
 
     print("\n5. Primena SMOTE tehnike SAMO na Trening setu...")
     X_train_smote, y_train_smote = apply_smote(X_train, y_train)
